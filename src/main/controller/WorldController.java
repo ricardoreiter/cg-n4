@@ -6,6 +6,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 
+import main.Box;
 import main.Camera;
 import main.World;
 import main.view.Render;
@@ -38,6 +39,11 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
+		Box box = new Box(4, new float[]{1, 0, 0});
+		box.translate(0, -6, 0);
+		box.scale(10, 0, 10);
+		world.add(box);
+		render();
 	}
 
 	@Override
