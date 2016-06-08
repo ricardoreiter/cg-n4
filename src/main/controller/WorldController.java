@@ -6,29 +6,15 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 
-import com.bulletphysics.linearmath.Transform;
-
 import main.Box;
 import main.World;
-import main.opengl.Camera;
-import main.view.Render;
 
 public class WorldController implements KeyListener, MouseListener, MouseMotionListener {
 
 	private final World world;
-	private final Render render;
 
-	public WorldController(final World world, final Render render) {
+	public WorldController(final World world) {
 		this.world = world;
-		this.render = render;
-	}
-
-	private void render() {
-		final Camera camera = world.getCamera();
-		final float[] axis = camera.axisSizes();
-		render.addDrawable(world);
-		render.setAxisSizes(axis);
-		render.render();
 	}
 
 	@Override
@@ -43,16 +29,7 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 	public void mouseClicked(MouseEvent e) {
 		Box box = new Box(4, new float[]{1, 0, 0});
 		world.add(box);
-		
-		for (int i = 0; i < 300; i++) {
-            world.getPhysicWorld().stepSimulation(1 / 60.f, 10);
-
-            Transform trans = new Transform();
-            box.getRigidBody().getMotionState().getWorldTransform(trans);
-
-            System.out.println(trans.origin.getY());
-		}
-		render();
+		world.requestRender();
 	}
 
 	@Override
@@ -78,7 +55,7 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 	@Override
 	public void keyPressed(KeyEvent e) {
 		updateCamera(e);
-		render();
+		world.requestRender();
 	}
 
 	@Override
@@ -123,7 +100,7 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 	 */
 	private void zoom(final int offset) {
 		world.getCamera().zoom(offset);
-		render();
+		world.requestRender();
 	}
 
 	/**
@@ -136,6 +113,7 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 	 */
 	private void adjustPan(final int axis, final int offset) {
 		world.getCamera().pan(axis, offset);
-		render();
+		world.requestRender();
 	}
+
 }

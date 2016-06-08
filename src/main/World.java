@@ -5,23 +5,32 @@ import java.util.List;
 
 import javax.media.opengl.GL;
 
-import com.bulletphysics.dynamics.DynamicsWorld;
-import com.sun.opengl.util.GLUT;
-
+import main.controller.Updatable;
 import main.opengl.Camera;
 import main.opengl.Drawable;
 import main.opengl.GraphicObject;
-import main.physic.BulletMain;
+import main.physics.BulletMain;
+import main.view.Render;
+
+import com.bulletphysics.dynamics.DynamicsWorld;
+import com.sun.opengl.util.GLUT;
 
 /**
  * Mundo que agrupa objetos gráficos.
  */
-public class World implements Drawable {
+public class World implements Drawable, Updatable {
 
 	private final Camera camera = new Camera();
 	private final List<WorldObject> objects = new LinkedList<>();
 	private final BulletMain mainPhysics = new BulletMain();
+	private final Render render;
+	private boolean needRender = false;
+	private Object lockList = new Object();
 
+	public World(Render render) {
+		this.render = render;
+	}
+	
 	/**
 	 * Obtém a camera associada ao mundo.
 	 * 
@@ -38,8 +47,11 @@ public class World implements Drawable {
 	 *            Objeto a ser adicionado.
 	 */
 	public void add(WorldObject worldObject) {
-		objects.add(worldObject);
-		mainPhysics.getWorld().addRigidBody(worldObject.getRigidBody());
+		synchronized (lockList) {
+			worldObject.setWorld(this);
+			objects.add(worldObject);
+			mainPhysics.getWorld().addRigidBody(worldObject.getRigidBody());
+		}
 	}
 
 	/**
@@ -49,16 +61,44 @@ public class World implements Drawable {
 	 *            objeto a ser removido.
 	 */
 	public void remove(GraphicObject graphicObject) {
-		objects.remove(graphicObject);
+		synchronized (lockList) {
+			objects.remove(graphicObject);
+		}
 	}
 
 	public DynamicsWorld getPhysicWorld() {
 		return mainPhysics.getWorld();
 	}
 	
+	public void requestRender() {
+		this.needRender = true;
+	}
+	
 	@Override
 	public void draw(GL gl, GLUT glut) {
-		objects.forEach(o -> o.draw(gl, glut));
+		synchronized (lockList) {
+			objects.forEach(o -> o.draw(gl, glut));
+		}
+	}
+
+	@Override
+	public void update(float deltaTime) {
+		if (needRender) {
+			needRender = false;
+			render();
+		}
+		mainPhysics.getWorld().stepSimulation(deltaTime);
+		synchronized (lockList) {
+			objects.forEach(o -> o.update(deltaTime));
+		}
+	}
+	
+	private void render() {
+		final Camera camera = getCamera();
+		final float[] axis = camera.axisSizes();
+		render.addDrawable(this);
+		render.setAxisSizes(axis);
+		render.render();
 	}
 
 }

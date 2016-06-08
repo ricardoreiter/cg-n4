@@ -1,4 +1,4 @@
-package main.physic;
+package main.physics;
 
 import javax.vecmath.Vector3f;
 
