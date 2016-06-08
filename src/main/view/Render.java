@@ -10,7 +10,7 @@ import javax.media.opengl.glu.GLU;
 
 import com.sun.opengl.util.GLUT;
 
-import main.Drawable;
+import main.opengl.Drawable;
 
 public class Render implements GLEventListener {
 

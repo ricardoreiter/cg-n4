@@ -16,7 +16,6 @@ public class MainWindow extends JFrame {
 	private static final long serialVersionUID = 1L;
 	public static final MainWindow mainWindow = new MainWindow();
 	
-
 	private final World world = new World();
 	private final Render render = new Render();
 	private final WorldController controller = new WorldController(world, render);

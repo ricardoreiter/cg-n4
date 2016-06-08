@@ -1,23 +1,18 @@
 package main;
 
-import javax.media.opengl.GL;
+import javax.vecmath.Vector3f;
 
-import com.sun.opengl.util.GLUT;
+import com.bulletphysics.collision.shapes.BoxShape;
 
-public class Box extends GraphicObject {
+import main.opengl.GraphicBox;
 
-	private float size;
-	private float[] color;
-	
+public class Box extends WorldObject {
+
 	public Box(float size, float[] color) {
-		this.size = size;
-		this.color = color;
+		super(new GraphicBox(size, color), new BoxShape(new Vector3f(size, size, size)));
+		Vector3f localInertia = new Vector3f();
+		collisionShape.calculateLocalInertia(1, localInertia);
+		getRigidBody().setMassProps(1, localInertia);
 	}
 	
-	@Override
-	public void innerDraw(final GL gl, final GLUT glut) {
-		gl.glColor3f(color[0], color[1], color[2]);
-		glut.glutSolidCube(size);
-	}
-
 }

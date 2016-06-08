@@ -6,9 +6,11 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 
+import com.bulletphysics.linearmath.Transform;
+
 import main.Box;
-import main.Camera;
 import main.World;
+import main.opengl.Camera;
 import main.view.Render;
 
 public class WorldController implements KeyListener, MouseListener, MouseMotionListener {
@@ -40,9 +42,16 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		Box box = new Box(4, new float[]{1, 0, 0});
-		box.translate(0, -6, 0);
-		box.scale(10, 0, 10);
 		world.add(box);
+		
+		for (int i = 0; i < 300; i++) {
+            world.getPhysicWorld().stepSimulation(1 / 60.f, 10);
+
+            Transform trans = new Transform();
+            box.getRigidBody().getMotionState().getWorldTransform(trans);
+
+            System.out.println(trans.origin.getY());
+		}
 		render();
 	}
 

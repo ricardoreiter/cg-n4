@@ -5,7 +5,13 @@ import java.util.List;
 
 import javax.media.opengl.GL;
 
+import com.bulletphysics.dynamics.DynamicsWorld;
 import com.sun.opengl.util.GLUT;
+
+import main.opengl.Camera;
+import main.opengl.Drawable;
+import main.opengl.GraphicObject;
+import main.physic.BulletMain;
 
 /**
  * Mundo que agrupa objetos gráficos.
@@ -13,7 +19,8 @@ import com.sun.opengl.util.GLUT;
 public class World implements Drawable {
 
 	private final Camera camera = new Camera();
-	private final List<GraphicObject> objects = new LinkedList<>();
+	private final List<WorldObject> objects = new LinkedList<>();
+	private final BulletMain mainPhysics = new BulletMain();
 
 	/**
 	 * Obtém a camera associada ao mundo.
@@ -27,11 +34,12 @@ public class World implements Drawable {
 	/**
 	 * Adiciona um novo objeto gráfico ao mundo.
 	 * 
-	 * @param graphicObject
+	 * @param worldObject
 	 *            Objeto a ser adicionado.
 	 */
-	public void add(GraphicObject graphicObject) {
-		objects.add(graphicObject);
+	public void add(WorldObject worldObject) {
+		objects.add(worldObject);
+		mainPhysics.getWorld().addRigidBody(worldObject.getRigidBody());
 	}
 
 	/**
@@ -44,6 +52,10 @@ public class World implements Drawable {
 		objects.remove(graphicObject);
 	}
 
+	public DynamicsWorld getPhysicWorld() {
+		return mainPhysics.getWorld();
+	}
+	
 	@Override
 	public void draw(GL gl, GLUT glut) {
 		objects.forEach(o -> o.draw(gl, glut));
