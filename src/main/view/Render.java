@@ -51,7 +51,7 @@ public class Render implements GLEventListener {
 		
 		gl.glMatrixMode(GL.GL_MODELVIEW);
         gl.glLoadIdentity();
-		glu.gluLookAt(20, 20, 20, 0, 0, 0, 0.0f, 1.0f, 0.0f);
+		glu.gluLookAt(50, 50, 50, 0, 0, 0, 0.0f, 1.0f, 0.0f);
 
 		SRU(gl);
 		while (!drawings.isEmpty()) {
@@ -67,7 +67,7 @@ public class Render implements GLEventListener {
 		gl.glLoadIdentity();
 		gl.glViewport(0, 0, width, height);
 		
-	    glu.gluPerspective(60, width/height, 0.1, 100);				// projecao Perpectiva 1 pto fuga 3D    
+	    glu.gluPerspective(60, width/height, 0.1, 1000);				// projecao Perpectiva 1 pto fuga 3D    
 	}
 
 	@Override

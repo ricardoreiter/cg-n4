@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import javax.media.opengl.GL;
+import javax.vecmath.Vector3f;
 
 import main.controller.Updatable;
 import main.opengl.Camera;
@@ -29,6 +30,9 @@ public class World implements Drawable, Updatable {
 
 	public World(Render render) {
 		this.render = render;
+		Box ground = new Box(10, new float[] {0.5f, 0.5f, 0.0f, 1}, 0, new Vector3f(0, -10, 0));
+		add(ground);
+		requestRender();
 	}
 	
 	/**

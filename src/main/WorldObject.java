@@ -24,14 +24,24 @@ public abstract class WorldObject implements Drawable, Updatable, PhysicsUpdatab
 	private final MotionState motionState;
 	private World world;
 	
-	public WorldObject(GraphicObject graphicObject, CollisionShape collisionShape) {
+	public WorldObject(GraphicObject graphicObject, CollisionShape collisionShape, Vector3f initPos) {
 		super();
 		this.graphicObject = graphicObject;
 		this.collisionShape = collisionShape;
-		this.motionState = new MotionProvider(this);
+		
+		Transform initTransform = new Transform();
+		initTransform.setIdentity();
+		initTransform.transform(initPos);
+		this.motionState = new MotionProvider(initTransform, this);
 		
 		RigidBodyConstructionInfo rigidBodyInfo = new RigidBodyConstructionInfo(0, this.motionState, this.collisionShape, new Vector3f());
 		this.rigidBody = new RigidBody(rigidBodyInfo);
+	}
+	
+	public void setMass(float mass) {
+		Vector3f localInertia = new Vector3f();
+		collisionShape.calculateLocalInertia(mass, localInertia);
+		getRigidBody().setMassProps(mass, localInertia);
 	}
 	
 	public void setWorld(World world) {
@@ -49,7 +59,7 @@ public abstract class WorldObject implements Drawable, Updatable, PhysicsUpdatab
 	
 	@Override
 	public void updatePhysics(Transform updated) {
-		graphicObject.translate(updated.origin.x, updated.origin.y, updated.origin.z);
+		updated.getOpenGLMatrix(graphicObject.getMatrix());
 		world.requestRender();
 	}
 	

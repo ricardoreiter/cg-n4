@@ -24,7 +24,7 @@ public class MainWindow extends JFrame {
 
 	public MainWindow() {
 		super("CG-N3");
-		setBounds(300, 250, 400, 422); // 400 + 22 da borda do titulo da janela
+		setBounds(100, 100, 800, 822); // 400 + 22 da borda do titulo da janela
 		setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		getContentPane().setLayout(new BorderLayout());
 

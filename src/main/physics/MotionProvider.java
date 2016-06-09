@@ -19,9 +19,10 @@ public class MotionProvider extends MotionState {
 		this.listener = listener;
 	}
 
-	public MotionProvider(Transform startTrans) {
+	public MotionProvider(Transform startTrans, PhysicsUpdatable listener) {
 		this.graphicsWorldTrans.set(startTrans);
 		centerOfMassOffset.setIdentity();
+		this.listener = listener;
 	}
 	
 	public MotionProvider(Transform startTrans, Transform centerOfMassOffset) {
