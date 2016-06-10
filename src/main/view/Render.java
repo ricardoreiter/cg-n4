@@ -1,6 +1,7 @@
 package main.view;
 
-import java.util.Stack;
+import java.util.LinkedList;
+import java.util.List;
 
 import javax.media.opengl.DebugGL;
 import javax.media.opengl.GL;
@@ -14,7 +15,7 @@ import main.opengl.Drawable;
 
 public class Render implements GLEventListener {
 
-	private final Stack<Drawable> drawings = new Stack<>();
+	private final List<Drawable> drawings = new LinkedList<>();
 	private final float[] axisSizes = { -400.0f, 400.0f, -400.0f, 400.0f };
 
 	private GL gl;
@@ -54,8 +55,7 @@ public class Render implements GLEventListener {
 		glu.gluLookAt(50, 50, 50, 0, 0, 0, 0.0f, 1.0f, 0.0f);
 
 		SRU(gl);
-		while (!drawings.isEmpty()) {
-			Drawable d = drawings.pop();
+		for (Drawable d : drawings) {
 			d.draw(gl, glut);
 		}
 		gl.glFlush();

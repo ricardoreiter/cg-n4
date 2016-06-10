@@ -36,6 +36,7 @@ public abstract class GraphicObject implements Drawable {
 
 	@Override
 	public void draw(final GL gl, final GLUT glut) {
+		System.out.println(String.format("Graphic: %s - Render", this));
 		gl.glMaterialfv(GL.GL_FRONT, GL.GL_AMBIENT_AND_DIFFUSE, materialColor, 0);
 		gl.glEnable(GL.GL_LIGHTING);
 		gl.glPushMatrix();

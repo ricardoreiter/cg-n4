@@ -29,7 +29,7 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
-		Box box = new Box(4, new float[]{1, 0, 0, 1}, 10, new Vector3f(0, 50, 0));
+		Box box = new Box(4, new float[]{1, 0, 0, 1}, 10, new Vector3f(0, 25, 0));
 		world.add(box);
 		world.requestRender();
 	}

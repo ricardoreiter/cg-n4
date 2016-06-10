@@ -6,15 +6,15 @@ import java.util.List;
 import javax.media.opengl.GL;
 import javax.vecmath.Vector3f;
 
+import com.bulletphysics.dynamics.DynamicsWorld;
+import com.sun.opengl.util.GLUT;
+
 import main.controller.Updatable;
 import main.opengl.Camera;
 import main.opengl.Drawable;
 import main.opengl.GraphicObject;
 import main.physics.BulletMain;
 import main.view.Render;
-
-import com.bulletphysics.dynamics.DynamicsWorld;
-import com.sun.opengl.util.GLUT;
 
 /**
  * Mundo que agrupa objetos gráficos.
@@ -30,8 +30,10 @@ public class World implements Drawable, Updatable {
 
 	public World(Render render) {
 		this.render = render;
-		Box ground = new Box(10, new float[] {0.5f, 0.5f, 0.0f, 1}, 0, new Vector3f(0, -10, 0));
-		add(ground);
+		this.render.addDrawable(this);
+		Plane plane = new Plane(new float[] {0, 0.8f, 1, 1}, new Vector3f(0, -1, 0));
+		add(plane);
+		
 		requestRender();
 	}
 	
@@ -54,6 +56,7 @@ public class World implements Drawable, Updatable {
 		synchronized (lockList) {
 			worldObject.setWorld(this);
 			objects.add(worldObject);
+
 			mainPhysics.getWorld().addRigidBody(worldObject.getRigidBody());
 		}
 	}
@@ -100,7 +103,6 @@ public class World implements Drawable, Updatable {
 	private void render() {
 		final Camera camera = getCamera();
 		final float[] axis = camera.axisSizes();
-		render.addDrawable(this);
 		render.setAxisSizes(axis);
 		render.render();
 	}

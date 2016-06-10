@@ -1,13 +1,9 @@
 package main;
 
 import javax.media.opengl.GL;
+import javax.vecmath.Matrix4f;
+import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
-
-import main.controller.Updatable;
-import main.opengl.Drawable;
-import main.opengl.GraphicObject;
-import main.physics.MotionProvider;
-import main.physics.PhysicsUpdatable;
 
 import com.bulletphysics.collision.shapes.CollisionShape;
 import com.bulletphysics.dynamics.RigidBody;
@@ -15,6 +11,12 @@ import com.bulletphysics.dynamics.RigidBodyConstructionInfo;
 import com.bulletphysics.linearmath.MotionState;
 import com.bulletphysics.linearmath.Transform;
 import com.sun.opengl.util.GLUT;
+
+import main.controller.Updatable;
+import main.opengl.Drawable;
+import main.opengl.GraphicObject;
+import main.physics.MotionProvider;
+import main.physics.PhysicsUpdatable;
 
 public abstract class WorldObject implements Drawable, Updatable, PhysicsUpdatable {
 
@@ -29,12 +31,13 @@ public abstract class WorldObject implements Drawable, Updatable, PhysicsUpdatab
 		this.graphicObject = graphicObject;
 		this.collisionShape = collisionShape;
 		
-		Transform initTransform = new Transform();
-		initTransform.setIdentity();
-		initTransform.transform(initPos);
-		this.motionState = new MotionProvider(initTransform, this);
+		Matrix4f matrix = new Matrix4f(new Quat4f(0, 0, 0, 1), initPos, 1);
+		Transform startTrans = new Transform(matrix);
+		this.motionState = new MotionProvider(startTrans, this);
 		
-		RigidBodyConstructionInfo rigidBodyInfo = new RigidBodyConstructionInfo(0, this.motionState, this.collisionShape, new Vector3f());
+		startTrans.getOpenGLMatrix(graphicObject.getMatrix());
+		
+		RigidBodyConstructionInfo rigidBodyInfo = new RigidBodyConstructionInfo(0, this.motionState, this.collisionShape, new Vector3f(0, 0, 0));
 		this.rigidBody = new RigidBody(rigidBodyInfo);
 	}
 	
