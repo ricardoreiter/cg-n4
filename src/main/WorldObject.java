@@ -1,6 +1,7 @@
 package main;
 
 import javax.media.opengl.GL;
+import javax.media.opengl.GLAutoDrawable;
 import javax.vecmath.Matrix4f;
 import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
@@ -53,6 +54,10 @@ public abstract class WorldObject implements Drawable, Updatable, PhysicsUpdatab
 
 	public RigidBody getRigidBody() {
 		return this.rigidBody;
+	}
+
+	@Override
+	public void initDraw(GLAutoDrawable drawable, GL gl) {
 	}
 	
 	@Override

@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import javax.media.opengl.GL;
+import javax.media.opengl.GLAutoDrawable;
 import javax.vecmath.Vector3f;
 
 import com.bulletphysics.dynamics.DynamicsWorld;
@@ -14,6 +15,7 @@ import main.opengl.Camera;
 import main.opengl.Drawable;
 import main.opengl.GraphicObject;
 import main.physics.BulletMain;
+import main.utils.GLDebugDebugger;
 import main.view.Render;
 
 /**
@@ -82,10 +84,16 @@ public class World implements Drawable, Updatable {
 	}
 	
 	@Override
+	public void initDraw(GLAutoDrawable drawable, GL gl) {
+		mainPhysics.getWorld().setDebugDrawer(new GLDebugDebugger(gl));
+	}
+	
+	@Override
 	public void draw(GL gl, GLUT glut) {
 		synchronized (lockList) {
 			objects.forEach(o -> o.draw(gl, glut));
 		}
+		mainPhysics.getWorld().debugDrawWorld();
 	}
 
 	@Override

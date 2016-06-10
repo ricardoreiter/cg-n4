@@ -1,6 +1,7 @@
 package main.opengl;
 
 import javax.media.opengl.GL;
+import javax.media.opengl.GLAutoDrawable;
 
 import com.sun.opengl.util.GLUT;
 
@@ -17,4 +18,6 @@ public interface Drawable {
 	 *            {@link GL} a receber o desenho.
 	 */
 	public void draw(final GL gl, final GLUT glut);
+
+	public void initDraw(GLAutoDrawable drawable, GL gl);
 }

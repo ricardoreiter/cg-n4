@@ -38,6 +38,10 @@ public class Render implements GLEventListener {
 	    gl.glEnable(GL.GL_CULL_FACE);
 		
 	    gl.glEnable(GL.GL_DEPTH_TEST);
+	    
+	    for (Drawable d : drawings) {
+			d.initDraw(drawable, gl);
+		}
 	}
 	
 	private void turnOnLight() {
@@ -119,4 +123,5 @@ public class Render implements GLEventListener {
 		}
 		glDrawable.display();
 	}
+
 }
