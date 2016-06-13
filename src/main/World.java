@@ -11,7 +11,6 @@ import com.bulletphysics.dynamics.DynamicsWorld;
 import com.sun.opengl.util.GLUT;
 
 import main.controller.Updatable;
-import main.opengl.Camera;
 import main.opengl.Drawable;
 import main.opengl.GraphicObject;
 import main.physics.BulletMain;
@@ -23,7 +22,6 @@ import main.view.Render;
  */
 public class World implements Drawable, Updatable {
 
-	private final Camera camera = new Camera();
 	private final List<WorldObject> objects = new LinkedList<>();
 	private final BulletMain mainPhysics = new BulletMain();
 	private final Render render;
@@ -39,15 +37,6 @@ public class World implements Drawable, Updatable {
 		requestRender();
 	}
 	
-	/**
-	 * Obtém a camera associada ao mundo.
-	 * 
-	 * @return {@link Camera} do mundo.
-	 */
-	public Camera getCamera() {
-		return camera;
-	}
-
 	/**
 	 * Adiciona um novo objeto gráfico ao mundo.
 	 * 
@@ -102,16 +91,13 @@ public class World implements Drawable, Updatable {
 			needRender = false;
 			render();
 		}
-		mainPhysics.getWorld().stepSimulation(deltaTime);
 		synchronized (lockList) {
+			mainPhysics.getWorld().stepSimulation(deltaTime);
 			objects.forEach(o -> o.update(deltaTime));
 		}
 	}
 	
 	private void render() {
-		final Camera camera = getCamera();
-		final float[] axis = camera.axisSizes();
-		render.setAxisSizes(axis);
 		render.render();
 	}
 

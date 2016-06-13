@@ -8,20 +8,27 @@ import javax.media.opengl.GL;
 import javax.media.opengl.GLAutoDrawable;
 import javax.media.opengl.GLEventListener;
 import javax.media.opengl.glu.GLU;
+import javax.vecmath.Vector3d;
 
 import com.sun.opengl.util.GLUT;
 
+import main.opengl.Camera;
 import main.opengl.Drawable;
 
 public class Render implements GLEventListener {
 
 	private final List<Drawable> drawings = new LinkedList<>();
-	private final float[] axisSizes = { -400.0f, 400.0f, -400.0f, 400.0f };
 
 	private GL gl;
 	private GLU glu;
 	private GLUT glut;
 	private GLAutoDrawable glDrawable;
+	
+	private final Camera camera = new Camera(new Vector3d(50, 50, 50), new Vector3d(0, 0, 0), new Vector3d(0, 1, 0));
+
+	public Camera getCamera() {
+		return camera;
+	}
 
 	@Override
 	public void init(GLAutoDrawable drawable) {
@@ -56,7 +63,9 @@ public class Render implements GLEventListener {
 		
 		gl.glMatrixMode(GL.GL_MODELVIEW);
         gl.glLoadIdentity();
-		glu.gluLookAt(50, 50, 50, 0, 0, 0, 0.0f, 1.0f, 0.0f);
+		glu.gluLookAt(camera.getEye().getX(), camera.getEye().getY(), camera.getEye().getZ(), // 
+					  camera.getCenter().getX(), camera.getCenter().getY(), camera.getCenter().getZ(), // 
+					  camera.getUp().getX(), camera.getUp().getY(), camera.getUp().getZ());
 
 		SRU(gl);
 		for (Drawable d : drawings) {
@@ -82,13 +91,6 @@ public class Render implements GLEventListener {
 		if (drawable != null) {
 			drawings.add(drawable);
 		}
-	}
-
-	public void setAxisSizes(final float[] newSizes) {
-		axisSizes[0] = newSizes[0];
-		axisSizes[1] = newSizes[1];
-		axisSizes[2] = newSizes[2];
-		axisSizes[3] = newSizes[3];
 	}
 
 	/**

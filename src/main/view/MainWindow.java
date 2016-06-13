@@ -8,6 +8,7 @@ import javax.swing.JFrame;
 import javax.swing.WindowConstants;
 
 import main.World;
+import main.controller.CameraController;
 import main.controller.LoopController;
 import main.controller.WorldController;
 
@@ -20,7 +21,8 @@ public class MainWindow extends JFrame {
 	private final Render render = new Render();
 	private final World world = new World(render);
 	private final WorldController controller = new WorldController(world);
-	private final LoopController loopController = new LoopController(world);
+	private final CameraController cameraController = new CameraController(render.getCamera(), world);
+	private final LoopController loopController = new LoopController();
 
 	public MainWindow() {
 		super("CG-N3");
@@ -48,9 +50,15 @@ public class MainWindow extends JFrame {
 		canvas.addKeyListener(controller);
 		canvas.addMouseListener(controller);
 		canvas.addMouseMotionListener(controller);
+		
+		canvas.addKeyListener(cameraController);
+		canvas.addMouseListener(cameraController);
+		canvas.addMouseMotionListener(cameraController);
 		canvas.requestFocus();
 		
 		Thread loopThread = new Thread(loopController);
+		loopController.addUpdatable(world);
+		loopController.addUpdatable(cameraController);
 		loopThread.start();
 	}
 

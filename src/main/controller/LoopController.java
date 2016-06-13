@@ -1,15 +1,13 @@
 package main.controller;
 
+import java.util.LinkedList;
+import java.util.List;
 
 public class LoopController implements Runnable {
 
-	private final Updatable updatable;
+	private final List<Updatable> updatables = new LinkedList<>();
 	private boolean active = true;
 	private double lastTime;
-	
-	public LoopController(Updatable updatable) {
-		this.updatable = updatable;
-	}
 	
 	public boolean isActive() {
 		return active;
@@ -17,6 +15,10 @@ public class LoopController implements Runnable {
 
 	public void setActive(boolean active) {
 		this.active = active;
+	}
+	
+	public void addUpdatable(Updatable updatable) {
+		updatables.add(updatable);
 	}
 
 	@Override
@@ -26,7 +28,9 @@ public class LoopController implements Runnable {
 			double lastTimeBkp = lastTime;
 			lastTime = System.currentTimeMillis();
 			float deltaTime = (float) ((lastTime - lastTimeBkp) / 1000);
-			updatable.update(deltaTime);
+			for (Updatable updatable : updatables) {
+				updatable.update(deltaTime);
+			}
 		}
 	}
 
