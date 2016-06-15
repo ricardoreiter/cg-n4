@@ -9,7 +9,7 @@ import com.bulletphysics.linearmath.IDebugDraw;
 public class GLDebugDebugger extends IDebugDraw {
 	
 	private final GL gl;
-	private int debugMode = DebugDrawModes.DRAW_AABB;
+	private int debugMode = DebugDrawModes.NO_DEBUG;
 	
 	public GLDebugDebugger(GL gl) {
 		super();

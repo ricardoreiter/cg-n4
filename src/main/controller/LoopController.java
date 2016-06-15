@@ -8,6 +8,11 @@ public class LoopController implements Runnable {
 	private final List<Updatable> updatables = new LinkedList<>();
 	private boolean active = true;
 	private double lastTime;
+	private double frames;
+	
+	public double getFrames() {
+		return frames;
+	}
 	
 	public boolean isActive() {
 		return active;
@@ -27,9 +32,17 @@ public class LoopController implements Runnable {
 		while (isActive()) {
 			double lastTimeBkp = lastTime;
 			lastTime = System.currentTimeMillis();
-			float deltaTime = (float) ((lastTime - lastTimeBkp) / 1000);
+			double deltaTime = (lastTime - lastTimeBkp) / 1000;
+			
+			if (deltaTime > 0) {
+				float smoothing = 0.99f;
+				double current = 1 / deltaTime; 
+				frames = (frames * smoothing) + (current * (1.0-smoothing));
+			}
+			
+			float deltaTimeFloat = (float) deltaTime;
 			for (Updatable updatable : updatables) {
-				updatable.update(deltaTime);
+				updatable.update(deltaTimeFloat);
 			}
 		}
 	}

@@ -10,9 +10,10 @@ import javax.swing.WindowConstants;
 import main.World;
 import main.controller.CameraController;
 import main.controller.LoopController;
+import main.controller.Updatable;
 import main.controller.WorldController;
 
-public class MainWindow extends JFrame {
+public class MainWindow extends JFrame implements Updatable {
 
 	public static GLCanvas canvas;
 	private static final long serialVersionUID = 1L;
@@ -59,10 +60,16 @@ public class MainWindow extends JFrame {
 		Thread loopThread = new Thread(loopController);
 		loopController.addUpdatable(world);
 		loopController.addUpdatable(cameraController);
+		loopController.addUpdatable(this);
 		loopThread.start();
 	}
 
 	public static void main(String[] args) {
 		mainWindow.setVisible(true);
+	}
+
+	@Override
+	public void update(float deltaTime) {
+		mainWindow.setTitle(String.format("FPS: %s", (int) Math.abs(loopController.getFrames())));
 	}
 }

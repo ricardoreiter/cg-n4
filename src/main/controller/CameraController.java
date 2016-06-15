@@ -13,11 +13,15 @@ import main.opengl.Camera;
 
 public class CameraController implements KeyListener, MouseListener, MouseMotionListener, Updatable {
 
+	private final static float MOVE_SENSIBILITY = 50;
+	
 	private final Camera camera;
 	private final World world;
 	
 	private boolean forward = false;
 	private boolean backward = false;
+	private boolean right = false;
+	private boolean left = false;
 	
 	public CameraController(Camera camera, World world) {
 		super();
@@ -62,6 +66,12 @@ public class CameraController implements KeyListener, MouseListener, MouseMotion
 			case KeyEvent.VK_S:
 				backward = true;
 				break;
+			case KeyEvent.VK_D:
+				right = true;
+				break;
+			case KeyEvent.VK_A:
+				left = true;
+				break;
 		}
 	}
 
@@ -73,6 +83,12 @@ public class CameraController implements KeyListener, MouseListener, MouseMotion
 				break;
 			case KeyEvent.VK_S:
 				backward = false;
+				break;
+			case KeyEvent.VK_D:
+				right = false;
+				break;
+			case KeyEvent.VK_A:
+				left = false;
 				break;
 		}	
 	}
@@ -86,13 +102,27 @@ public class CameraController implements KeyListener, MouseListener, MouseMotion
 		if (forward) {
 			Vector3d direction = getDirection(camera.getEye(), camera.getCenter());
 			direction.normalize();
-			direction = multiply(direction, deltaTime * 100);
+			direction = multiply(direction, deltaTime * MOVE_SENSIBILITY);
 			moveCameraToDirection(direction);
 		}
 		if (backward) {
 			Vector3d direction = getDirection(camera.getCenter(), camera.getEye());
 			direction.normalize();
-			direction = multiply(direction, deltaTime * 100);
+			direction = multiply(direction, deltaTime * MOVE_SENSIBILITY);
+			moveCameraToDirection(direction);
+		}
+		if (right) {
+			Vector3d direction = getDirection(camera.getEye(), camera.getCenter());
+			direction.normalize();
+			direction = multiply(direction, deltaTime * MOVE_SENSIBILITY);
+			direction = new Vector3d(-direction.z, direction.y, direction.x);
+			moveCameraToDirection(direction);
+		}
+		if (left) {
+			Vector3d direction = getDirection(camera.getEye(), camera.getCenter());
+			direction.normalize();
+			direction = multiply(direction, deltaTime * MOVE_SENSIBILITY);
+			direction = new Vector3d(direction.z, direction.y, -direction.x);
 			moveCameraToDirection(direction);
 		}
 	}
