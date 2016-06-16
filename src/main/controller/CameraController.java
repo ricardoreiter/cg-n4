@@ -1,17 +1,20 @@
 package main.controller;
 
+import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 
-import javax.vecmath.Vector3d;
+import javax.vecmath.Vector3f;
 
 import main.World;
 import main.opengl.Camera;
 
 public class CameraController implements KeyListener, MouseListener, MouseMotionListener, Updatable {
+
+	private static final float ROTATE_SENSITIVITY = 0.25f;
 
 	private final static float MOVE_SENSIBILITY = 50;
 	
@@ -22,15 +25,43 @@ public class CameraController implements KeyListener, MouseListener, MouseMotion
 	private boolean backward = false;
 	private boolean right = false;
 	private boolean left = false;
+	private boolean moveCamera = false;
+	private Point oldMousePos = null;
+	private float yRotation = 0;
+	private float xRotation = 0;
 	
 	public CameraController(Camera camera, World world) {
 		super();
 		this.camera = camera;
 		this.world = world;
+		
+		// Quando iniciamos a camera, como o olho está no centro e olhando para fora, fazemos uma translação da distancia do centro para poder ver o cenário de fora
+		Vector3f viewTranslate = new Vector3f(camera.getCenter());
+		viewTranslate.negate();
+		viewTranslate.add(camera.getEye());
+		this.camera.translate(viewTranslate);
 	}
 
 	@Override
 	public void mouseDragged(MouseEvent arg0) {
+		if (moveCamera) {
+			Point currentPos = arg0.getPoint();
+			
+			if (oldMousePos == null) {
+				oldMousePos = currentPos;
+			}
+		
+			float yDiff = (oldMousePos.x - currentPos.x) * ROTATE_SENSITIVITY;
+			yRotation += yDiff;
+			
+			float xDiff = (currentPos.y - oldMousePos.y) * 0.5f;
+			xRotation += xDiff;
+			
+			camera.rotate(xRotation, yRotation);
+			world.requestRender();
+			
+			oldMousePos = currentPos;
+		}
 	}
 
 	@Override
@@ -51,10 +82,17 @@ public class CameraController implements KeyListener, MouseListener, MouseMotion
 
 	@Override
 	public void mousePressed(MouseEvent arg0) {
+		if (arg0.getButton() == MouseEvent.BUTTON3) {
+			moveCamera = true;
+		}
 	}
 
 	@Override
 	public void mouseReleased(MouseEvent arg0) {
+		if (arg0.getButton() == MouseEvent.BUTTON3) {
+			moveCamera = false;
+			oldMousePos = null;
+		}
 	}
 
 	@Override
@@ -100,51 +138,44 @@ public class CameraController implements KeyListener, MouseListener, MouseMotion
 	@Override
 	public void update(float deltaTime) {
 		if (forward) {
-			Vector3d direction = getDirection(camera.getEye(), camera.getCenter());
+			Vector3f direction = getDirection(camera.getEye(), camera.getCenter());
 			direction.normalize();
 			direction = multiply(direction, deltaTime * MOVE_SENSIBILITY);
 			moveCameraToDirection(direction);
 		}
 		if (backward) {
-			Vector3d direction = getDirection(camera.getCenter(), camera.getEye());
+			Vector3f direction = getDirection(camera.getCenter(), camera.getEye());
 			direction.normalize();
 			direction = multiply(direction, deltaTime * MOVE_SENSIBILITY);
 			moveCameraToDirection(direction);
 		}
 		if (right) {
-			Vector3d direction = getDirection(camera.getEye(), camera.getCenter());
+			Vector3f direction = getDirection(camera.getEye(), camera.getCenter());
 			direction.normalize();
 			direction = multiply(direction, deltaTime * MOVE_SENSIBILITY);
-			direction = new Vector3d(-direction.z, direction.y, direction.x);
+			direction = new Vector3f(-direction.z, direction.y, direction.x);
 			moveCameraToDirection(direction);
 		}
 		if (left) {
-			Vector3d direction = getDirection(camera.getEye(), camera.getCenter());
+			Vector3f direction = getDirection(camera.getEye(), camera.getCenter());
 			direction.normalize();
 			direction = multiply(direction, deltaTime * MOVE_SENSIBILITY);
-			direction = new Vector3d(direction.z, direction.y, -direction.x);
+			direction = new Vector3f(direction.z, direction.y, -direction.x);
 			moveCameraToDirection(direction);
 		}
 	}
 	
-	private void moveCameraToDirection(Vector3d direction) {
-		Vector3d newEyePos = sum(camera.getEye(), direction);
-		Vector3d newCenterPos = sum(camera.getCenter(), direction);
-		camera.setEye(newEyePos);
-		camera.setCenter(newCenterPos);
+	private void moveCameraToDirection(Vector3f direction) {
+		camera.translate(direction);
 		world.requestRender();
 	}
 	
-	private Vector3d multiply(Vector3d a, float b) {
-		return new Vector3d(a.x * b, a.y * b, a.z * b);
+	private Vector3f multiply(Vector3f a, float b) {
+		return new Vector3f(a.x * b, a.y * b, a.z * b);
 	}
 	
-	private Vector3d sum(Vector3d a, Vector3d b) {
-		return new Vector3d(a.x + b.x, a.y + b.y, a.z + b.z);
-	}
-	
-	private Vector3d getDirection(Vector3d from, Vector3d to) {
-		return new Vector3d(to.x - from.x, to.y - from.y, to.z - from.z);
+	private Vector3f getDirection(Vector3f from, Vector3f to) {
+		return new Vector3f(to.x - from.x, to.y - from.y, to.z - from.z);
 	}
 
 }

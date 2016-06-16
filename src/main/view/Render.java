@@ -8,7 +8,7 @@ import javax.media.opengl.GL;
 import javax.media.opengl.GLAutoDrawable;
 import javax.media.opengl.GLEventListener;
 import javax.media.opengl.glu.GLU;
-import javax.vecmath.Vector3d;
+import javax.vecmath.Vector3f;
 
 import com.sun.opengl.util.GLUT;
 
@@ -24,7 +24,7 @@ public class Render implements GLEventListener {
 	private GLUT glut;
 	private GLAutoDrawable glDrawable;
 	
-	private final Camera camera = new Camera(new Vector3d(50, 10, 50), new Vector3d(0, 10, 0), new Vector3d(0, 1, 0));
+	private final Camera camera = new Camera(new Vector3f(0, 10, 0), new Vector3f(0, 10, 50), new Vector3f(0, 1, 0));
 
 	public Camera getCamera() {
 		return camera;
