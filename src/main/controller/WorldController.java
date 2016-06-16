@@ -9,21 +9,29 @@ import java.awt.event.MouseMotionListener;
 import java.nio.DoubleBuffer;
 import java.nio.IntBuffer;
 
-import javax.media.opengl.GL;
 import javax.media.opengl.glu.GLU;
-import javax.vecmath.Vector3d;
+import javax.vecmath.Matrix4f;
+import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
 
 import main.Box;
+import main.Line;
 import main.World;
+import main.WorldObject;
 import main.physics.Ray;
 import main.view.Render;
 
+import com.bulletphysics.collision.dispatch.CollisionWorld.ClosestRayResultCallback;
+import com.bulletphysics.linearmath.Transform;
+
 public class WorldController implements KeyListener, MouseListener, MouseMotionListener, Updatable {
 
+	private static final float OBJECT_TO_ADD_HEIGHT = 10f;
 	private final World world;
 	private final Render render;
 	private Point currentMousePosOnScreen;
+	private WorldObject objectToBeAdded;
+	private Line lineAux;
 
 	public WorldController(final World world, final Render render) {
 		this.world = world;
@@ -84,20 +92,16 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 		
 		GLU glu = render.getGlu();
 		
-		for (int i = 0; i < 16; i++) {
-			System.out.println(modelMatrix.get(i));
-		}
-		
 		DoubleBuffer coordBuffer = DoubleBuffer.allocate(3);
 		glu.gluUnProject(mousePos.getX(), winY, 0.0f, //
 						 modelMatrix, projectionMatrix, viewport, //
 						 coordBuffer);
-		Vector3d origin = new Vector3d(coordBuffer.get(0), coordBuffer.get(1), coordBuffer.get(2));
+		Vector3f origin = new Vector3f((float) coordBuffer.get(0), (float) coordBuffer.get(1), (float) coordBuffer.get(2));
 		
 		glu.gluUnProject(mousePos.getX(), winY, 1.0f, //
 						 modelMatrix, projectionMatrix, viewport, //
 						 coordBuffer);
-		Vector3d direction = new Vector3d(coordBuffer.get(0), coordBuffer.get(1), coordBuffer.get(2));
+		Vector3f direction = new Vector3f((float) (coordBuffer.get(0)), (float) (coordBuffer.get(1)), (float) (coordBuffer.get(2)));
 		
 		return new Ray(origin, direction);
 	}
@@ -105,7 +109,37 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 	@Override
 	public void update(float deltaTime) {
 		if (currentMousePosOnScreen != null) {
-			System.out.println(mousePosToRay(currentMousePosOnScreen));
+			Ray ray = mousePosToRay(currentMousePosOnScreen);
+			
+			ClosestRayResultCallback rayResult = null;
+			synchronized (world.lockList) {
+				rayResult = new ClosestRayResultCallback(ray.getOrigin(), ray.getDirection());
+				world.getPhysicWorld().rayTest(ray.getOrigin(), ray.getDirection(), rayResult);
+			}
+			
+			if (rayResult.hasHit()) {
+				if (objectToBeAdded == null) {
+					objectToBeAdded = new Box(3, new float[]{0.0f, 0.0f, 1.0f}, new Vector3f());
+					lineAux = new Line(OBJECT_TO_ADD_HEIGHT, new float[] {1f, 0.0f, 1f}, new Vector3f());
+					world.add(objectToBeAdded);
+					world.add(lineAux);
+				}
+				// Movimenta a linha
+				Matrix4f matrix = new Matrix4f(new Quat4f(0, 0, 0, 1), rayResult.hitPointWorld, 1);
+				Transform newTrans = new Transform(matrix);
+				lineAux.getMotionState().setWorldTransform(newTrans);
+				
+				// Movimenta a caixa
+				rayResult.hitPointWorld.y += OBJECT_TO_ADD_HEIGHT;
+				matrix = new Matrix4f(new Quat4f(0, 0, 0, 1), rayResult.hitPointWorld, 1);
+				newTrans = new Transform(matrix);
+				objectToBeAdded.getMotionState().setWorldTransform(newTrans);
+			} else if (objectToBeAdded != null) {
+				world.remove(objectToBeAdded);
+				world.remove(lineAux);
+				objectToBeAdded = null;
+				lineAux = null;
+			}
 		}
 	}
 	

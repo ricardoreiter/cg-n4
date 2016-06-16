@@ -42,6 +42,19 @@ public abstract class WorldObject implements Drawable, Updatable, PhysicsUpdatab
 		this.rigidBody = new RigidBody(rigidBodyInfo);
 	}
 	
+	public WorldObject(GraphicObject graphicObject, Vector3f initPos) {
+		super();
+		this.graphicObject = graphicObject;
+		this.collisionShape = null;
+		this.rigidBody = null;
+		
+		Matrix4f matrix = new Matrix4f(new Quat4f(0, 0, 0, 1), initPos, 1);
+		Transform startTrans = new Transform(matrix);
+		this.motionState = new MotionProvider(startTrans, this);
+		
+		startTrans.getOpenGLMatrix(graphicObject.getMatrix());
+	}
+	
 	public void setMass(float mass) {
 		Vector3f localInertia = new Vector3f();
 		collisionShape.calculateLocalInertia(mass, localInertia);
@@ -54,6 +67,10 @@ public abstract class WorldObject implements Drawable, Updatable, PhysicsUpdatab
 
 	public RigidBody getRigidBody() {
 		return this.rigidBody;
+	}
+
+	public MotionState getMotionState() {
+		return motionState;
 	}
 
 	@Override

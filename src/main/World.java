@@ -7,15 +7,14 @@ import javax.media.opengl.GL;
 import javax.media.opengl.GLAutoDrawable;
 import javax.vecmath.Vector3f;
 
-import com.bulletphysics.dynamics.DynamicsWorld;
-import com.sun.opengl.util.GLUT;
-
 import main.controller.Updatable;
 import main.opengl.Drawable;
-import main.opengl.GraphicObject;
 import main.physics.BulletMain;
-import main.utils.GLDebugDebugger;
+import main.utils.GLDebugDraw;
 import main.view.Render;
+
+import com.bulletphysics.dynamics.DynamicsWorld;
+import com.sun.opengl.util.GLUT;
 
 /**
  * Mundo que agrupa objetos gráficos.
@@ -26,7 +25,7 @@ public class World implements Drawable, Updatable {
 	private final BulletMain mainPhysics = new BulletMain();
 	private final Render render;
 	private boolean needRender = false;
-	private Object lockList = new Object();
+	public Object lockList = new Object(); // Pequena gambizinha botar isso em public pro worldcontroller locar ao fazer raytest, mas depois tem q ser arrumado
 
 	public World(Render render) {
 		this.render = render;
@@ -48,19 +47,21 @@ public class World implements Drawable, Updatable {
 			worldObject.setWorld(this);
 			objects.add(worldObject);
 
-			mainPhysics.getWorld().addRigidBody(worldObject.getRigidBody());
+			if (worldObject.getRigidBody() != null) {
+				mainPhysics.getWorld().addRigidBody(worldObject.getRigidBody());
+			}
 		}
 	}
 
 	/**
 	 * Remove um objeto gráfico do mundo.
 	 * 
-	 * @param graphicObject
+	 * @param worldObject
 	 *            objeto a ser removido.
 	 */
-	public void remove(GraphicObject graphicObject) {
+	public void remove(WorldObject worldObject) {
 		synchronized (lockList) {
-			objects.remove(graphicObject);
+			objects.remove(worldObject);
 		}
 	}
 
@@ -74,7 +75,7 @@ public class World implements Drawable, Updatable {
 	
 	@Override
 	public void initDraw(GLAutoDrawable drawable, GL gl) {
-		mainPhysics.getWorld().setDebugDrawer(new GLDebugDebugger(gl));
+		mainPhysics.getWorld().setDebugDrawer(new GLDebugDraw(gl));
 	}
 	
 	@Override

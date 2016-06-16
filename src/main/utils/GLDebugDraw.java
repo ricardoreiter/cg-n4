@@ -6,12 +6,12 @@ import javax.vecmath.Vector3f;
 import com.bulletphysics.linearmath.DebugDrawModes;
 import com.bulletphysics.linearmath.IDebugDraw;
 
-public class GLDebugDebugger extends IDebugDraw {
+public class GLDebugDraw extends IDebugDraw {
 	
 	private final GL gl;
 	private int debugMode = DebugDrawModes.NO_DEBUG;
 	
-	public GLDebugDebugger(GL gl) {
+	public GLDebugDraw(GL gl) {
 		super();
 		this.gl = gl;
 	}
