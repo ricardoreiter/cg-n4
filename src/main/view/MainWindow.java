@@ -21,7 +21,7 @@ public class MainWindow extends JFrame implements Updatable {
 	
 	private final Render render = new Render();
 	private final World world = new World(render);
-	private final WorldController controller = new WorldController(world);
+	private final WorldController worldController = new WorldController(world, render);
 	private final CameraController cameraController = new CameraController(render.getCamera(), world);
 	private final LoopController loopController = new LoopController();
 
@@ -48,9 +48,9 @@ public class MainWindow extends JFrame implements Updatable {
 		canvas = new GLCanvas(glCaps);
 		add(canvas, BorderLayout.CENTER);
 		canvas.addGLEventListener(render);
-		canvas.addKeyListener(controller);
-		canvas.addMouseListener(controller);
-		canvas.addMouseMotionListener(controller);
+		canvas.addKeyListener(worldController);
+		canvas.addMouseListener(worldController);
+		canvas.addMouseMotionListener(worldController);
 		
 		canvas.addKeyListener(cameraController);
 		canvas.addMouseListener(cameraController);
@@ -59,6 +59,7 @@ public class MainWindow extends JFrame implements Updatable {
 		
 		Thread loopThread = new Thread(loopController);
 		loopController.addUpdatable(world);
+		loopController.addUpdatable(worldController);
 		loopController.addUpdatable(cameraController);
 		loopController.addUpdatable(this);
 		loopThread.start();

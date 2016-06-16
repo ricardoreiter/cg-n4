@@ -15,8 +15,9 @@ import main.opengl.Camera;
 public class CameraController implements KeyListener, MouseListener, MouseMotionListener, Updatable {
 
 	private static final float ROTATE_SENSITIVITY = 0.25f;
-
-	private final static float MOVE_SENSIBILITY = 50;
+	private static final float MOVE_SENSIBILITY = 50;
+	private static final float MAX_ROTATE_UP = 60f;
+	private static final float MAX_ROTATE_DOWN = -60f;
 	
 	private final Camera camera;
 	private final World world;
@@ -56,6 +57,11 @@ public class CameraController implements KeyListener, MouseListener, MouseMotion
 			
 			float xDiff = (currentPos.y - oldMousePos.y) * 0.5f;
 			xRotation += xDiff;
+			if (xRotation > MAX_ROTATE_UP) {
+				xRotation = MAX_ROTATE_UP;
+			} else if (xRotation < MAX_ROTATE_DOWN) {
+				xRotation = MAX_ROTATE_DOWN;
+			}
 			
 			camera.rotate(xRotation, yRotation);
 			world.requestRender();
@@ -65,7 +71,8 @@ public class CameraController implements KeyListener, MouseListener, MouseMotion
 	}
 
 	@Override
-	public void mouseMoved(MouseEvent arg0) {
+	public void mouseMoved(MouseEvent mouseEvent) {
+		
 	}
 
 	@Override
@@ -163,6 +170,7 @@ public class CameraController implements KeyListener, MouseListener, MouseMotion
 			direction = new Vector3f(direction.z, direction.y, -direction.x);
 			moveCameraToDirection(direction);
 		}
+
 	}
 	
 	private void moveCameraToDirection(Vector3f direction) {

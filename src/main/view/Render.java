@@ -1,5 +1,8 @@
 package main.view;
 
+import java.nio.DoubleBuffer;
+import java.nio.IntBuffer;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -23,6 +26,9 @@ public class Render implements GLEventListener {
 	private GLU glu;
 	private GLUT glut;
 	private GLAutoDrawable glDrawable;
+	private IntBuffer viewport = IntBuffer.allocate(4);
+	private DoubleBuffer modelMatrix = DoubleBuffer.allocate(16);
+	private DoubleBuffer projectionMatrix = DoubleBuffer.allocate(16);
 	
 	private final Camera camera = new Camera(new Vector3f(0, 10, 0), new Vector3f(0, 10, 50), new Vector3f(0, 1, 0));
 
@@ -72,6 +78,21 @@ public class Render implements GLEventListener {
 			d.draw(gl, glut);
 		}
 		gl.glFlush();
+		
+		synchronized (viewport) {
+			viewport.clear();
+			gl.glGetIntegerv(GL.GL_VIEWPORT, viewport);
+		}
+		
+		synchronized (modelMatrix) {
+			modelMatrix.clear();
+			gl.glGetDoublev(GL.GL_MODELVIEW_MATRIX, modelMatrix);
+		}
+		
+		synchronized (projectionMatrix) {
+			projectionMatrix.clear();
+			gl.glGetDoublev(GL.GL_PROJECTION_MATRIX, projectionMatrix);
+		}
 	}
 
 	@Override
@@ -124,6 +145,32 @@ public class Render implements GLEventListener {
 			return;
 		}
 		glDrawable.display();
+	}
+
+	public GL getGl() {
+		return gl;
+	}
+
+	public GLU getGlu() {
+		return glu;
+	}
+	
+	public IntBuffer getViewport() {
+		synchronized (viewport) {
+			return IntBuffer.wrap(Arrays.copyOf(viewport.array(), viewport.array().length));
+		}
+	}
+	
+	public DoubleBuffer getModelMatrix() {
+		synchronized (modelMatrix) {
+			return DoubleBuffer.wrap(Arrays.copyOf(modelMatrix.array(), modelMatrix.array().length));
+		}
+	}
+	
+	public DoubleBuffer getProjectionMatrix() {
+		synchronized (projectionMatrix) {
+			return DoubleBuffer.wrap(Arrays.copyOf(projectionMatrix.array(), projectionMatrix.array().length));
+		}
 	}
 
 }
