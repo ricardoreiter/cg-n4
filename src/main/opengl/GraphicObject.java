@@ -67,4 +67,6 @@ public abstract class GraphicObject implements Drawable {
 		return transformMatrix;
 	}
 
+	public abstract void setSize(float size);
+
 }

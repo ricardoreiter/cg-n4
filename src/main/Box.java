@@ -20,5 +20,5 @@ public class Box extends WorldObject {
 	@Override
 	public void update(float deltaTime) {
 	}
-	
+
 }

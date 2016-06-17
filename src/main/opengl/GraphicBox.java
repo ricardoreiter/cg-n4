@@ -18,4 +18,9 @@ public class GraphicBox extends GraphicObject {
 		glut.glutSolidCube(size);
 	}
 
+	@Override
+	public void setSize(float size) {
+		this.size = size;
+	}
+
 }

@@ -28,6 +28,11 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 
 	private static final float GHOST_OBJECT_HEIGHT = 10f;
 	private static final float GHOST_OBJECT_MAX_HEIGHT = 30f;
+	
+	private static final float GHOST_OBJECT_DEFAULT_SIZE = 3f;
+	private static final float GHOST_OBJECT_MAX_SIZE = 30f;
+	private static final float GHOST_OBJECT_MIN_SIZE = 1f;
+	
 	private final World world;
 	private final Render render;
 	private Point currentMousePosOnScreen;
@@ -36,6 +41,7 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 	private Line ghostObjectLine;
 	private Vector3f ghostObjectPos = new Vector3f();
 	private float ghostObjectHeight = GHOST_OBJECT_HEIGHT;
+	private float ghostObjectSize = GHOST_OBJECT_DEFAULT_SIZE;
 	private boolean needUpdateGhostObject = false;
 	private GhostObjectWheelAction currentMouseWheelAction = GhostObjectWheelAction.CHANGE_HEIGHT;
 
@@ -66,7 +72,7 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 	@Override
 	public void mouseReleased(MouseEvent e) {
 		if (e.getButton() == MouseEvent.BUTTON1) {
-			Box box = new Box(4, new float[]{1, 0, 0, 1}, 10, ghostObjectPos);
+			Box box = new Box(ghostObjectSize, new float[]{1, 0, 0, 1}, 10, ghostObjectPos);
 			world.add(box);
 			world.requestRender();
 		}
@@ -146,16 +152,17 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 			
 			if (rayResult.hasHit()) {
 				if (ghostObject == null) {
-					ghostObject = new Box(3, new float[]{0.0f, 0.0f, 1.0f}, new Vector3f());
+					ghostObject = new Box(ghostObjectSize, new float[]{0.0f, 0.0f, 1.0f}, new Vector3f());
 					ghostObjectLine = new Line(ghostObjectHeight, new float[] {1f, 0.0f, 1f}, new Vector3f());
 					world.add(ghostObject);
 					world.add(ghostObjectLine);
 				}
 				// Movimenta a linha
-				ghostObjectLine.getMotionState().setWorldTransform(TransformUtils.getTranslationTransform(rayResult.hitPointWorld));
 				ghostObjectLine.setSize(ghostObjectHeight);
+				ghostObjectLine.getMotionState().setWorldTransform(TransformUtils.getTranslationTransform(rayResult.hitPointWorld));
 				
 				// Movimenta a caixa
+				ghostObject.setSize(ghostObjectSize);
 				rayResult.hitPointWorld.y += ghostObjectHeight;
 				ghostObject.getMotionState().setWorldTransform(TransformUtils.getTranslationTransform(rayResult.hitPointWorld));
 				ghostObjectPos = new Vector3f(rayResult.hitPointWorld);
@@ -178,19 +185,29 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 				// TODO: Fazer rotação em eixo Y
 				break;
 			case CHANGE_SIZE:
-				// TODO: Fazer mudar tamanho do objeto
+				changeGhostSize(e);
 				break;
 		}
 		needUpdateGhostObject = true;
 	}
 
+	private void changeGhostSize(MouseWheelEvent e) {
+		ghostObjectSize += e.getWheelRotation();
+		ghostObjectSize = clampRange(ghostObjectSize, GHOST_OBJECT_MIN_SIZE, GHOST_OBJECT_MAX_SIZE);
+	}
+
 	private void changeGhostHeight(MouseWheelEvent e) {
 		ghostObjectHeight += e.getWheelRotation();
-		if (ghostObjectHeight > GHOST_OBJECT_MAX_HEIGHT) {
-			ghostObjectHeight = GHOST_OBJECT_MAX_HEIGHT;
-		} else if (ghostObjectHeight < 0) {
-			ghostObjectHeight = 0;
+		ghostObjectHeight = clampRange(ghostObjectHeight, 0, GHOST_OBJECT_MAX_HEIGHT);
+	}
+	
+	private float clampRange(float currentValue, float minValue, float maxValue) {
+		if (currentValue > maxValue) {
+			return maxValue;
+		} else if (currentValue < minValue) {
+			return minValue;
 		}
+		return currentValue;
 	}
 	
 }

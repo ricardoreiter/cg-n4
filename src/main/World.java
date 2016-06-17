@@ -30,7 +30,7 @@ public class World implements Drawable, Updatable {
 	public World(Render render) {
 		this.render = render;
 		this.render.addDrawable(this);
-		Plane plane = new Plane(new float[] {0, 0.8f, 1, 1}, new Vector3f(0, -1, 0));
+		Plane plane = new Plane(100, new float[] {0, 0.8f, 1, 1}, new Vector3f(0, -1, 0));
 		add(plane);
 		
 		requestRender();

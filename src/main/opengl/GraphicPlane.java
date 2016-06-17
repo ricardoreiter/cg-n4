@@ -6,7 +6,10 @@ import com.sun.opengl.util.GLUT;
 
 public class GraphicPlane extends GraphicObject {
 
-	public GraphicPlane(float[] color) {
+	private float size;
+	
+	public GraphicPlane(float size, float[] color) {
+		this.size = size;
 		this.materialColor = color;
 	}
 	
@@ -15,12 +18,17 @@ public class GraphicPlane extends GraphicObject {
 		gl.glBegin(GL.GL_QUADS);
 		
 		gl.glNormal3f(0,1,0);
-		gl.glVertex3f(-30.0f,  0f, -30.0f);
-		gl.glVertex3f(-30.0f,  0f,  30.0f);
-		gl.glVertex3f( 30.0f,  0f,  30.0f);
-		gl.glVertex3f( 30.0f,  0f, -30.0f);
+		gl.glVertex3f(-size,  0f, -size);
+		gl.glVertex3f(-size,  0f,  size);
+		gl.glVertex3f( size,  0f,  size);
+		gl.glVertex3f( size,  0f, -size);
 		
 		gl.glEnd();
+	}
+
+	@Override
+	public void setSize(float size) {
+		this.size = size;
 	}
 
 }
