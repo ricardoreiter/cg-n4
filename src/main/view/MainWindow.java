@@ -51,6 +51,7 @@ public class MainWindow extends JFrame implements Updatable {
 		canvas.addKeyListener(worldController);
 		canvas.addMouseListener(worldController);
 		canvas.addMouseMotionListener(worldController);
+		canvas.addMouseWheelListener(worldController);
 		
 		canvas.addKeyListener(cameraController);
 		canvas.addMouseListener(cameraController);

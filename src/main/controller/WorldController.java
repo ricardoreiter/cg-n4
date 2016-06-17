@@ -6,6 +6,8 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.nio.DoubleBuffer;
 import java.nio.IntBuffer;
 
@@ -22,15 +24,19 @@ import main.physics.Ray;
 import main.utils.TransformUtils;
 import main.view.Render;
 
-public class WorldController implements KeyListener, MouseListener, MouseMotionListener, Updatable {
+public class WorldController implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, Updatable {
 
 	private static final float GHOST_OBJECT_HEIGHT = 10f;
+	private static final float GHOST_OBJECT_MAX_HEIGHT = 30f;
 	private final World world;
 	private final Render render;
 	private Point currentMousePosOnScreen;
+	
 	private WorldObject ghostObject;
 	private Line ghostObjectLine;
 	private Vector3f ghostObjectPos = new Vector3f();
+	private float ghostObjectHeight = GHOST_OBJECT_HEIGHT;
+	private boolean needUpdateGhostObject = false;
 
 	public WorldController(final World world, final Render render) {
 		this.world = world;
@@ -44,6 +50,7 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 	@Override
 	public void mouseMoved(MouseEvent e) {
 		currentMousePosOnScreen = e.getPoint();
+		needUpdateGhostObject = true;
 	}
 
 	@Override
@@ -90,7 +97,7 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 		DoubleBuffer modelMatrix = render.getModelMatrix();
 		DoubleBuffer projectionMatrix = render.getProjectionMatrix();
 		
-		float winY = (float) (viewport.get(3) - mousePos.getY());
+		double winY = viewport.get(3) - mousePos.getY();
 		
 		GLU glu = render.getGlu();
 		
@@ -114,7 +121,7 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 	}
 	
 	private void updateGhostObject() {
-		if (currentMousePosOnScreen != null && render.getGlu() != null) {
+		if (needUpdateGhostObject && currentMousePosOnScreen != null && render.getGlu() != null) {
 			Ray ray = mousePosToRay(currentMousePosOnScreen);
 			
 			ClosestRayResultCallback rayResult = null;
@@ -126,15 +133,16 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 			if (rayResult.hasHit()) {
 				if (ghostObject == null) {
 					ghostObject = new Box(3, new float[]{0.0f, 0.0f, 1.0f}, new Vector3f());
-					ghostObjectLine = new Line(GHOST_OBJECT_HEIGHT, new float[] {1f, 0.0f, 1f}, new Vector3f());
+					ghostObjectLine = new Line(ghostObjectHeight, new float[] {1f, 0.0f, 1f}, new Vector3f());
 					world.add(ghostObject);
 					world.add(ghostObjectLine);
 				}
 				// Movimenta a linha
 				ghostObjectLine.getMotionState().setWorldTransform(TransformUtils.getTranslationTransform(rayResult.hitPointWorld));
+				ghostObjectLine.setSize(ghostObjectHeight);
 				
 				// Movimenta a caixa
-				rayResult.hitPointWorld.y += GHOST_OBJECT_HEIGHT;
+				rayResult.hitPointWorld.y += ghostObjectHeight;
 				ghostObject.getMotionState().setWorldTransform(TransformUtils.getTranslationTransform(rayResult.hitPointWorld));
 				ghostObjectPos = new Vector3f(rayResult.hitPointWorld);
 			} else if (ghostObject != null) {
@@ -144,6 +152,17 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 				ghostObjectLine = null;
 			}
 		}
+	}
+
+	@Override
+	public void mouseWheelMoved(MouseWheelEvent e) {
+		ghostObjectHeight += e.getWheelRotation();
+		if (ghostObjectHeight > GHOST_OBJECT_MAX_HEIGHT) {
+			ghostObjectHeight = GHOST_OBJECT_MAX_HEIGHT;
+		} else if (ghostObjectHeight < 0) {
+			ghostObjectHeight = 0;
+		}
+		needUpdateGhostObject = true;
 	}
 	
 }

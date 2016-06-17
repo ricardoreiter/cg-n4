@@ -13,6 +13,14 @@ public class GraphicLine extends GraphicObject {
 		this.materialColor = color;
 	}
 	
+	public float getSize() {
+		return size;
+	}
+
+	public void setSize(float size) {
+		this.size = size;
+	}
+
 	@Override
 	public void innerDraw(final GL gl, final GLUT glut) {
 		gl.glColor4f(materialColor[0], materialColor[1], materialColor[2], 1.0f);

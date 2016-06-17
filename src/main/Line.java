@@ -13,5 +13,9 @@ public class Line extends WorldObject {
 	@Override
 	public void update(float deltaTime) {
 	}
+
+	public void setSize(float size) {
+		((GraphicLine) graphicObject).setSize(size);
+	}
 	
 }
