@@ -37,6 +37,7 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 	private Vector3f ghostObjectPos = new Vector3f();
 	private float ghostObjectHeight = GHOST_OBJECT_HEIGHT;
 	private boolean needUpdateGhostObject = false;
+	private GhostObjectWheelAction currentMouseWheelAction = GhostObjectWheelAction.CHANGE_HEIGHT;
 
 	public WorldController(final World world, final Render render) {
 		this.world = world;
@@ -85,11 +86,24 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 
 	@Override
 	public void keyPressed(KeyEvent e) {
-		world.requestRender();
+		switch (e.getKeyCode()) {
+			case KeyEvent.VK_SHIFT:
+				currentMouseWheelAction = GhostObjectWheelAction.CHANGE_SIZE;
+				break;
+			case KeyEvent.VK_CONTROL:
+				currentMouseWheelAction = GhostObjectWheelAction.CHANGE_ROTATION;
+				break;
+		}
 	}
 
 	@Override
 	public void keyReleased(final KeyEvent e) {
+		switch (e.getKeyCode()) {
+			case KeyEvent.VK_SHIFT:
+			case KeyEvent.VK_CONTROL:
+				currentMouseWheelAction = GhostObjectWheelAction.CHANGE_HEIGHT;
+				break;
+		}
 	}
 
 	private Ray mousePosToRay(Point mousePos) {
@@ -156,13 +170,27 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 
 	@Override
 	public void mouseWheelMoved(MouseWheelEvent e) {
+		switch (currentMouseWheelAction) {
+			case CHANGE_HEIGHT:
+				changeGhostHeight(e);
+				break;
+			case CHANGE_ROTATION:
+				// TODO: Fazer rotação em eixo Y
+				break;
+			case CHANGE_SIZE:
+				// TODO: Fazer mudar tamanho do objeto
+				break;
+		}
+		needUpdateGhostObject = true;
+	}
+
+	private void changeGhostHeight(MouseWheelEvent e) {
 		ghostObjectHeight += e.getWheelRotation();
 		if (ghostObjectHeight > GHOST_OBJECT_MAX_HEIGHT) {
 			ghostObjectHeight = GHOST_OBJECT_MAX_HEIGHT;
 		} else if (ghostObjectHeight < 0) {
 			ghostObjectHeight = 0;
 		}
-		needUpdateGhostObject = true;
 	}
 	
 }
