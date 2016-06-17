@@ -30,7 +30,7 @@ public class Render implements GLEventListener {
 	private DoubleBuffer modelMatrix = DoubleBuffer.allocate(16);
 	private DoubleBuffer projectionMatrix = DoubleBuffer.allocate(16);
 	
-	private final Camera camera = new Camera(new Vector3f(0, 10, 0), new Vector3f(0, 10, 50), new Vector3f(0, 1, 0));
+	private final Camera camera = new Camera(new Vector3f(0, 10, 0), new Vector3f(0, 10, -50), new Vector3f(0, 1, 0));
 
 	public Camera getCamera() {
 		return camera;

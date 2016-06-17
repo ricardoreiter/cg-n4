@@ -55,7 +55,7 @@ public class CameraController implements KeyListener, MouseListener, MouseMotion
 			float yDiff = (oldMousePos.x - currentPos.x) * ROTATE_SENSITIVITY;
 			yRotation += yDiff;
 			
-			float xDiff = (currentPos.y - oldMousePos.y) * 0.5f;
+			float xDiff = (oldMousePos.y - currentPos.y) * 0.5f;
 			xRotation += xDiff;
 			if (xRotation > MAX_ROTATE_UP) {
 				xRotation = MAX_ROTATE_UP;

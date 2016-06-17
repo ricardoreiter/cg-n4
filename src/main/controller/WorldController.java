@@ -10,28 +10,27 @@ import java.nio.DoubleBuffer;
 import java.nio.IntBuffer;
 
 import javax.media.opengl.glu.GLU;
-import javax.vecmath.Matrix4f;
-import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
+
+import com.bulletphysics.collision.dispatch.CollisionWorld.ClosestRayResultCallback;
 
 import main.Box;
 import main.Line;
 import main.World;
 import main.WorldObject;
 import main.physics.Ray;
+import main.utils.TransformUtils;
 import main.view.Render;
-
-import com.bulletphysics.collision.dispatch.CollisionWorld.ClosestRayResultCallback;
-import com.bulletphysics.linearmath.Transform;
 
 public class WorldController implements KeyListener, MouseListener, MouseMotionListener, Updatable {
 
-	private static final float OBJECT_TO_ADD_HEIGHT = 10f;
+	private static final float GHOST_OBJECT_HEIGHT = 10f;
 	private final World world;
 	private final Render render;
 	private Point currentMousePosOnScreen;
-	private WorldObject objectToBeAdded;
-	private Line lineAux;
+	private WorldObject ghostObject;
+	private Line ghostObjectLine;
+	private Vector3f ghostObjectPos = new Vector3f();
 
 	public WorldController(final World world, final Render render) {
 		this.world = world;
@@ -49,9 +48,7 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
-		Box box = new Box(4, new float[]{1, 0, 0, 1}, 10, new Vector3f(0, 25, 0));
-		world.add(box);
-		world.requestRender();
+		
 	}
 
 	@Override
@@ -60,6 +57,11 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 
 	@Override
 	public void mouseReleased(MouseEvent e) {
+		if (e.getButton() == MouseEvent.BUTTON1) {
+			Box box = new Box(4, new float[]{1, 0, 0, 1}, 10, ghostObjectPos);
+			world.add(box);
+			world.requestRender();
+		}
 	}
 
 	@Override
@@ -108,7 +110,11 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 
 	@Override
 	public void update(float deltaTime) {
-		if (currentMousePosOnScreen != null) {
+		updateGhostObject();
+	}
+	
+	private void updateGhostObject() {
+		if (currentMousePosOnScreen != null && render.getGlu() != null) {
 			Ray ray = mousePosToRay(currentMousePosOnScreen);
 			
 			ClosestRayResultCallback rayResult = null;
@@ -118,27 +124,24 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 			}
 			
 			if (rayResult.hasHit()) {
-				if (objectToBeAdded == null) {
-					objectToBeAdded = new Box(3, new float[]{0.0f, 0.0f, 1.0f}, new Vector3f());
-					lineAux = new Line(OBJECT_TO_ADD_HEIGHT, new float[] {1f, 0.0f, 1f}, new Vector3f());
-					world.add(objectToBeAdded);
-					world.add(lineAux);
+				if (ghostObject == null) {
+					ghostObject = new Box(3, new float[]{0.0f, 0.0f, 1.0f}, new Vector3f());
+					ghostObjectLine = new Line(GHOST_OBJECT_HEIGHT, new float[] {1f, 0.0f, 1f}, new Vector3f());
+					world.add(ghostObject);
+					world.add(ghostObjectLine);
 				}
 				// Movimenta a linha
-				Matrix4f matrix = new Matrix4f(new Quat4f(0, 0, 0, 1), rayResult.hitPointWorld, 1);
-				Transform newTrans = new Transform(matrix);
-				lineAux.getMotionState().setWorldTransform(newTrans);
+				ghostObjectLine.getMotionState().setWorldTransform(TransformUtils.getTranslationTransform(rayResult.hitPointWorld));
 				
 				// Movimenta a caixa
-				rayResult.hitPointWorld.y += OBJECT_TO_ADD_HEIGHT;
-				matrix = new Matrix4f(new Quat4f(0, 0, 0, 1), rayResult.hitPointWorld, 1);
-				newTrans = new Transform(matrix);
-				objectToBeAdded.getMotionState().setWorldTransform(newTrans);
-			} else if (objectToBeAdded != null) {
-				world.remove(objectToBeAdded);
-				world.remove(lineAux);
-				objectToBeAdded = null;
-				lineAux = null;
+				rayResult.hitPointWorld.y += GHOST_OBJECT_HEIGHT;
+				ghostObject.getMotionState().setWorldTransform(TransformUtils.getTranslationTransform(rayResult.hitPointWorld));
+				ghostObjectPos = new Vector3f(rayResult.hitPointWorld);
+			} else if (ghostObject != null) {
+				world.remove(ghostObject);
+				world.remove(ghostObjectLine);
+				ghostObject = null;
+				ghostObjectLine = null;
 			}
 		}
 	}
