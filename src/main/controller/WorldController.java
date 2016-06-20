@@ -45,6 +45,7 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 	private float ghostObjectSize = GHOST_OBJECT_DEFAULT_SIZE;
 	private boolean needUpdateGhostObject = false;
 	private GhostObjectWheelAction currentMouseWheelAction = GhostObjectWheelAction.CHANGE_HEIGHT;
+	private GhostObjectType currentObjectType = GhostObjectType.BOX;
 
 	public WorldController(final World world, final Render render) {
 		this.world = world;
@@ -73,8 +74,8 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 	@Override
 	public void mouseReleased(MouseEvent e) {
 		if (e.getButton() == MouseEvent.BUTTON1) {
-			Box box = new Box(ghostObjectSize, new float[]{1, 0, 0, 1}, 10, ghostObjectPos);
-			world.add(box);
+			WorldObject object = factoryObject(currentObjectType, new float[]{1, 0, 0, 1}, true, 10, ghostObjectPos);
+			world.add(object);
 			world.requestRender();
 		}
 	}
@@ -89,6 +90,36 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 
 	@Override
 	public void keyTyped(KeyEvent e) {
+	}
+	
+	private void setCurrentObjectType(GhostObjectType type) {
+		System.out.println("lol");
+		currentObjectType = type;
+		
+		if (ghostObject != null) {
+			world.remove(ghostObject);
+		}
+		
+		ghostObject = factoryObject(type, new float[]{0.0f, 0.0f, 1.0f}, false, 0, new Vector3f());
+		world.add(ghostObject);
+	}
+	
+	private WorldObject factoryObject(GhostObjectType type, float[] color, boolean withPhysics, float mass, Vector3f pos) {
+		switch (type) {
+			case BOX:
+				if (withPhysics) {
+					return new Box(ghostObjectSize, color, mass, pos);
+				} else {
+					return new Box(ghostObjectSize, color, pos);
+				}
+			case SPHERE:
+				if (withPhysics) {
+					return new Sphere(ghostObjectSize, color, mass, pos);
+				} else {
+					return new Sphere(ghostObjectSize, color, pos);
+				}
+		}
+		return null;
 	}
 
 	@Override
@@ -109,6 +140,12 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 			case KeyEvent.VK_SHIFT:
 			case KeyEvent.VK_CONTROL:
 				currentMouseWheelAction = GhostObjectWheelAction.CHANGE_HEIGHT;
+				break;
+			case KeyEvent.VK_1:
+				setCurrentObjectType(GhostObjectType.BOX);
+				break;
+			case KeyEvent.VK_2:
+				setCurrentObjectType(GhostObjectType.SPHERE);
 				break;
 		}
 	}
@@ -153,9 +190,8 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 			
 			if (rayResult.hasHit()) {
 				if (ghostObject == null) {
-					ghostObject = new Box(ghostObjectSize, new float[]{0.0f, 0.0f, 1.0f}, new Vector3f());
+					setCurrentObjectType(GhostObjectType.BOX);
 					ghostObjectLine = new Line(ghostObjectHeight, new float[] {1f, 0.0f, 1f}, new Vector3f());
-					world.add(ghostObject);
 					world.add(ghostObjectLine);
 				}
 				// Movimenta a linha
