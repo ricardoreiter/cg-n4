@@ -18,6 +18,7 @@ import com.bulletphysics.collision.dispatch.CollisionWorld.ClosestRayResultCallb
 
 import main.Box;
 import main.Line;
+import main.Ramp;
 import main.Sphere;
 import main.World;
 import main.WorldObject;
@@ -118,8 +119,15 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 				} else {
 					return new Sphere(ghostObjectSize, color, pos);
 				}
+			case RAMP:
+				if (withPhysics) {
+					return new Ramp(ghostObjectSize, color, mass, pos);
+				} else {
+					return new Ramp(ghostObjectSize, color, pos);
+				}
+		default:
+			return null;
 		}
-		return null;
 	}
 
 	@Override
@@ -146,6 +154,9 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 				break;
 			case KeyEvent.VK_2:
 				setCurrentObjectType(GhostObjectType.SPHERE);
+				break;
+			case KeyEvent.VK_3:
+				setCurrentObjectType(GhostObjectType.RAMP);
 				break;
 		}
 	}
