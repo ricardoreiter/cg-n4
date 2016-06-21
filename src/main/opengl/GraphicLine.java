@@ -1,6 +1,7 @@
 package main.opengl;
 
 import javax.media.opengl.GL;
+import javax.vecmath.Vector3f;
 
 import com.sun.opengl.util.GLUT;
 
@@ -17,8 +18,8 @@ public class GraphicLine extends GraphicObject {
 		return size;
 	}
 
-	public void setSize(float size) {
-		this.size = size;
+	public void setSize(Vector3f size) {
+		this.size = size.x;
 	}
 
 	@Override

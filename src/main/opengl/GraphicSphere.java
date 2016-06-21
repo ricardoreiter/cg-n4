@@ -1,6 +1,7 @@
 package main.opengl;
 
 import javax.media.opengl.GL;
+import javax.vecmath.Vector3f;
 
 import com.sun.opengl.util.GLUT;
 
@@ -19,8 +20,8 @@ public class GraphicSphere extends GraphicObject {
 	}
 
 	@Override
-	public void setSize(float size) {
-		this.radius = size;
+	public void setSize(Vector3f size) {
+		this.radius = size.x;
 	}
 
 }

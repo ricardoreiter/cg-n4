@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.GLAutoDrawable;
+import javax.vecmath.Vector3f;
 
 import com.sun.opengl.util.GLUT;
 
@@ -67,6 +68,6 @@ public abstract class GraphicObject implements Drawable {
 		return transformMatrix;
 	}
 
-	public abstract void setSize(float size);
+	public abstract void setSize(Vector3f size);
 
 }

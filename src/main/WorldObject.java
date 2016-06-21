@@ -85,10 +85,12 @@ public abstract class WorldObject implements Drawable, Updatable, PhysicsUpdatab
 	@Override
 	public void updatePhysics(Transform updated) {
 		updated.getOpenGLMatrix(graphicObject.getMatrix());
-		world.requestRender();
+		if (world != null) {
+			world.requestRender();
+		}
 	}
 
-	public void setSize(float size) {
+	public void setSize(Vector3f size) {
 		if (rigidBody != null) {
 			throw new UnsupportedOperationException("Mudar o tamanho de um objeto com corpo rígido depois de criado por enquanto não é possível");
 		}

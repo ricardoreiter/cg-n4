@@ -5,7 +5,6 @@ import java.util.List;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.GLAutoDrawable;
-import javax.vecmath.Vector3f;
 
 import main.controller.Updatable;
 import main.opengl.Drawable;
@@ -30,9 +29,6 @@ public class World implements Drawable, Updatable {
 	public World(Render render) {
 		this.render = render;
 		this.render.addDrawable(this);
-		Plane plane = new Plane(100, new float[] {0, 0.8f, 1, 1}, new Vector3f(0, -1, 0));
-		add(plane);
-		
 		requestRender();
 	}
 	
