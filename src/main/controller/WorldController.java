@@ -26,6 +26,7 @@ import main.utils.TransformUtils;
 import main.view.Render;
 
 import com.bulletphysics.collision.dispatch.CollisionWorld.ClosestRayResultCallback;
+import com.bulletphysics.dynamics.constraintsolver.Point2PointConstraint;
 
 public class WorldController implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, Updatable {
 
@@ -53,10 +54,7 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 		this.world = world;
 		this.render = render;
 		
-		List<WorldObject> scenarioObjects = Scenario.getGameScenario();
-		for (WorldObject object : scenarioObjects) {
-			world.add(object);
-		}
+		Scenario.mountGameScenario(world);
 	}
 
 	@Override
@@ -167,6 +165,7 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 	}
 
 	private Ray mousePosToRay(Point mousePos) {
+		// Acredite ou não, se tirar esses sysouts desse método, ele as vezes trava ao apontar o mouse para o vazio
 		System.out.println("1");
 		IntBuffer viewport = render.getViewport();
 		DoubleBuffer modelMatrix = render.getModelMatrix();
