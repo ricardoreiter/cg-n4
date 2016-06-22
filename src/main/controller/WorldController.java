@@ -10,7 +10,6 @@ import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.nio.DoubleBuffer;
 import java.nio.IntBuffer;
-import java.util.List;
 
 import javax.media.opengl.glu.GLU;
 import javax.vecmath.Vector3f;
@@ -26,7 +25,6 @@ import main.utils.TransformUtils;
 import main.view.Render;
 
 import com.bulletphysics.collision.dispatch.CollisionWorld.ClosestRayResultCallback;
-import com.bulletphysics.dynamics.constraintsolver.Point2PointConstraint;
 
 public class WorldController implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, Updatable {
 
@@ -161,12 +159,21 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 			case KeyEvent.VK_3:
 				setCurrentObjectType(GhostObjectType.RAMP);
 				break;
+			case KeyEvent.VK_P:
+				world.getPhysicWorld().stepSimulation(1);
+				break;
+			case KeyEvent.VK_O:
+				world.removeConstraint(Scenario.boxCoverConstraintA);
+				world.removeConstraint(Scenario.boxCoverConstraintB);
+				break;
+			case KeyEvent.VK_C:
+				world.addConstraint(Scenario.boxCoverConstraintA);
+				world.addConstraint(Scenario.boxCoverConstraintB);
+				break;
 		}
 	}
 
 	private Ray mousePosToRay(Point mousePos) {
-		// Acredite ou não, se tirar esses sysouts desse método, ele as vezes trava ao apontar o mouse para o vazio
-		System.out.println("1");
 		IntBuffer viewport = render.getViewport();
 		DoubleBuffer modelMatrix = render.getModelMatrix();
 		DoubleBuffer projectionMatrix = render.getProjectionMatrix();
@@ -175,7 +182,6 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 		
 		GLU glu = render.getGlu();
 		
-		System.out.println("2");
 		DoubleBuffer coordBuffer = DoubleBuffer.allocate(3);
 		glu.gluUnProject(mousePos.getX(), winY, 0.0f, //
 						 modelMatrix, projectionMatrix, viewport, //
@@ -187,7 +193,6 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 						 coordBuffer);
 		Vector3f direction = new Vector3f((float) (coordBuffer.get(0)), (float) (coordBuffer.get(1)), (float) (coordBuffer.get(2)));
 		
-		System.out.println("3");
 		return new Ray(origin, direction);
 	}
 
@@ -213,8 +218,10 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 					world.add(ghostObjectLine);
 				}
 				// Movimenta a linha
-				ghostObjectLine.setSize(new Vector3f(ghostObjectHeight, ghostObjectHeight, ghostObjectHeight));
-				ghostObjectLine.getMotionState().setWorldTransform(TransformUtils.getTranslationTransform(rayResult.hitPointWorld));
+				if (ghostObjectLine != null) {
+					ghostObjectLine.setSize(new Vector3f(ghostObjectHeight, ghostObjectHeight, ghostObjectHeight));
+					ghostObjectLine.getMotionState().setWorldTransform(TransformUtils.getTranslationTransform(rayResult.hitPointWorld));
+				}
 				
 				// Movimenta a caixa
 				ghostObject.setSize(ghostObjectSize);

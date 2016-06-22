@@ -2,17 +2,18 @@ package main.utils;
 
 import javax.vecmath.Vector3f;
 
-import com.bulletphysics.dynamics.constraintsolver.Point2PointConstraint;
-
 import main.Box;
 import main.Plane;
 import main.Sphere;
 import main.World;
-import main.WorldObject;
+
+import com.bulletphysics.dynamics.constraintsolver.Point2PointConstraint;
+import com.bulletphysics.dynamics.constraintsolver.TypedConstraint;
 
 public abstract class Scenario {
 
-	public static WorldObject boxCover;
+	public static TypedConstraint boxCoverConstraintA;
+	public static TypedConstraint boxCoverConstraintB;
 	
 	public static void mountGameScenario(World world) {
 		
@@ -38,18 +39,18 @@ public abstract class Scenario {
 		world.add(boxWallA);
 		
 		//Tampa caixa de bolas
-		boxCover = new Box(new Vector3f(5, 1, 5), new float[]{1, 0.2f, 1f}, 1, new Vector3f(-22.5f, 36.9f, 0));
+		Box boxCover = new Box(new Vector3f(5, 1, 5), new float[]{1, 0.2f, 1f}, 80, new Vector3f(-22.5f, 36.9f, 0));
 		world.add(boxCover);
 		
-		Point2PointConstraint constaintA = new Point2PointConstraint(boxCover.getRigidBody(), boxWallA.getRigidBody(), new Vector3f(-2.5f, -0.5f, 2.5f), new Vector3f(0, -13f, 2.5f));
-		Point2PointConstraint constaintB = new Point2PointConstraint(boxCover.getRigidBody(), boxWallA.getRigidBody(), new Vector3f(-2.5f, -0.5f, -2.5f), new Vector3f(0, -13f, -2.5f));
-		Point2PointConstraint constaintC = new Point2PointConstraint(boxCover.getRigidBody(), boxWallB.getRigidBody(), new Vector3f(2.5f, -0.5f, 2.5f), new Vector3f(0, -13f, 2.5f));
-		Point2PointConstraint constaintD = new Point2PointConstraint(boxCover.getRigidBody(), boxWallB.getRigidBody(), new Vector3f(2.5f, -0.5f, -2.5f), new Vector3f(0, -13f, -2.5f));
+		boxCoverConstraintA = new Point2PointConstraint(boxCover.getRigidBody(), boxWallA.getRigidBody(), new Vector3f(2.5f, 0.5f, 2.5f), new Vector3f(0, -12.7f, 2.5f));
+		boxCoverConstraintB = new Point2PointConstraint(boxCover.getRigidBody(), boxWallA.getRigidBody(), new Vector3f(2.5f, 0.5f, -2.5f), new Vector3f(0, -12.7f, -2.5f));
+		Point2PointConstraint constaintC = new Point2PointConstraint(boxCover.getRigidBody(), boxWallB.getRigidBody(), new Vector3f(-2.5f, 0.5f, 2.5f), new Vector3f(0, -12.7f, 2.5f));
+		Point2PointConstraint constaintD = new Point2PointConstraint(boxCover.getRigidBody(), boxWallB.getRigidBody(), new Vector3f(-2.5f, 0.5f, -2.5f), new Vector3f(0, -12.7f, -2.5f));
 		
-		world.getPhysicWorld().addConstraint(constaintA);
-//		world.getPhysicWorld().addConstraint(constaintB);
-//		world.getPhysicWorld().addConstraint(constaintC);
-//		world.getPhysicWorld().addConstraint(constaintD);
+		world.getPhysicWorld().addConstraint(boxCoverConstraintA);
+		world.getPhysicWorld().addConstraint(boxCoverConstraintB);
+		world.getPhysicWorld().addConstraint(constaintC);
+		world.getPhysicWorld().addConstraint(constaintD);
 		
 		//Bolas
 		world.add(new Sphere(2, new float[]{1, 0, 0.8f}, 50, new Vector3f(-22.5f, 50, 0)));
