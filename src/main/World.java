@@ -13,6 +13,7 @@ import main.physics.BulletMain;
 import main.utils.GLDebugDraw;
 import main.view.Render;
 
+import com.bulletphysics.ContactAddedCallback;
 import com.bulletphysics.dynamics.DynamicsWorld;
 import com.bulletphysics.dynamics.constraintsolver.TypedConstraint;
 import com.sun.opengl.util.GLUT;
@@ -103,12 +104,16 @@ public class World implements Drawable, Updatable {
 	public void removeConstraint(TypedConstraint constraint) {
 		synchronized (lockList) {
 			mainPhysics.getWorld().removeConstraint(constraint);
+			constraint.getRigidBodyA().activate();
+			constraint.getRigidBodyB().activate();
 		}
 	}
 
 	public void addConstraint(TypedConstraint constraint) {
 		synchronized (lockList) {
 			mainPhysics.getWorld().addConstraint(constraint);
+			constraint.getRigidBodyA().activate();
+			constraint.getRigidBodyB().activate();
 		}
 	}
 
