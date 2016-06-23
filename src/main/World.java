@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.GLAutoDrawable;
+import javax.media.opengl.glu.GLU;
 
 import main.controller.Updatable;
 import main.opengl.Drawable;
@@ -76,9 +77,9 @@ public class World implements Drawable, Updatable {
 	}
 	
 	@Override
-	public void draw(GL gl, GLUT glut) {
+	public void draw(GL gl, final GLU glu, GLUT glut) {
 		synchronized (lockList) {
-			objects.forEach(o -> o.draw(gl, glut));
+			objects.forEach(o -> o.draw(gl, glu, glut));
 		}
 		mainPhysics.getWorld().debugDrawWorld();
 	}

@@ -75,7 +75,7 @@ public class Render implements GLEventListener {
 
 		SRU(gl);
 		for (Drawable d : drawings) {
-			d.draw(gl, glut);
+			d.draw(gl, glu, glut);
 		}
 		gl.glFlush();
 		

@@ -12,6 +12,7 @@ import java.nio.DoubleBuffer;
 import java.nio.IntBuffer;
 
 import javax.media.opengl.glu.GLU;
+import javax.vecmath.Vector3d;
 import javax.vecmath.Vector3f;
 
 import main.Box;
@@ -23,6 +24,7 @@ import main.physics.Ray;
 import main.utils.Scenario;
 import main.utils.TransformUtils;
 import main.view.Render;
+import main.view.WorldControllerUI;
 
 import com.bulletphysics.collision.dispatch.CollisionWorld.ClosestRayResultCallback;
 
@@ -35,8 +37,14 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 	private static final float GHOST_OBJECT_MAX_SIZE = 30f;
 	private static final float GHOST_OBJECT_MIN_SIZE = 1f;
 	
+	private static final float GHOST_OBJECT_DEFAULT_MASS = 10;
+	private static final float GHOST_OBJECT_MAX_MASS = 100000;
+	private static final float GHOST_OBJECT_MIN_MASS = 0;
+	private static final float GHOST_OBJECT_MASS_STEP = 100;
+	
 	private final World world;
 	private final Render render;
+	private final WorldControllerUI controllerUI;
 	private Point currentMousePosOnScreen;
 	
 	private WorldObject ghostObject;
@@ -44,6 +52,7 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 	private Vector3f ghostObjectPos = new Vector3f();
 	private float ghostObjectHeight = GHOST_OBJECT_HEIGHT;
 	private Vector3f ghostObjectSize = new Vector3f(GHOST_OBJECT_DEFAULT_SIZE, GHOST_OBJECT_DEFAULT_SIZE, GHOST_OBJECT_DEFAULT_SIZE);
+	private float newObjectMass = GHOST_OBJECT_DEFAULT_MASS;
 	private boolean needUpdateGhostObject = false;
 	private GhostObjectWheelAction currentMouseWheelAction = GhostObjectWheelAction.CHANGE_HEIGHT;
 	private GhostObjectType currentObjectType = GhostObjectType.BOX;
@@ -51,6 +60,8 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 	public WorldController(final World world, final Render render) {
 		this.world = world;
 		this.render = render;
+		this.controllerUI = new WorldControllerUI();
+		this.render.addDrawable(this.controllerUI);
 		
 		Scenario.mountGameScenario(world);
 	}
@@ -77,7 +88,7 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 	@Override
 	public void mouseReleased(MouseEvent e) {
 		if (e.getButton() == MouseEvent.BUTTON1) {
-			WorldObject object = factoryObject(currentObjectType, new float[]{1, 0, 0, 1}, true, 10, ghostObjectPos);
+			WorldObject object = factoryObject(currentObjectType, new float[]{1, 0, 0, 1}, true, newObjectMass, ghostObjectPos);
 			world.add(object);
 			world.requestRender();
 		}
@@ -170,7 +181,18 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 				world.addConstraint(Scenario.boxCoverConstraintA);
 				world.addConstraint(Scenario.boxCoverConstraintB);
 				break;
+			case KeyEvent.VK_F1:
+				addObjectMass(GHOST_OBJECT_MASS_STEP);
+				break;
+			case KeyEvent.VK_F2:
+				addObjectMass(-GHOST_OBJECT_MASS_STEP);
+				break;
 		}
+	}
+	
+	private void addObjectMass(float mass) {
+		newObjectMass = clampRange(newObjectMass + mass, GHOST_OBJECT_MIN_MASS, GHOST_OBJECT_MAX_MASS);
+		System.out.println("new mass " + newObjectMass);
 	}
 
 	private Ray mousePosToRay(Point mousePos) {
@@ -228,6 +250,10 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 				rayResult.hitPointWorld.y += ghostObjectHeight;
 				ghostObject.getMotionState().setWorldTransform(TransformUtils.getTranslationTransform(rayResult.hitPointWorld));
 				ghostObjectPos = new Vector3f(rayResult.hitPointWorld);
+				
+				// Atualiza a UI com as informações do objeto
+				controllerUI.setCurrentObjectMass(newObjectMass);
+				controllerUI.setCurrentInfoPos(new Vector3d(ghostObjectPos.x + (ghostObjectSize.x / 2) +2, ghostObjectPos.y, ghostObjectPos.z));
 			} else if (ghostObject != null) {
 				world.remove(ghostObject);
 				world.remove(ghostObjectLine);

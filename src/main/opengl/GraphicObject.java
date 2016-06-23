@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.GLAutoDrawable;
+import javax.media.opengl.glu.GLU;
 import javax.vecmath.Vector3f;
 
 import com.sun.opengl.util.GLUT;
@@ -42,7 +43,7 @@ public abstract class GraphicObject implements Drawable {
 	}
 	
 	@Override
-	public void draw(final GL gl, final GLUT glut) {
+	public void draw(final GL gl, final GLU glu, final GLUT glut) {
 		gl.glMaterialfv(GL.GL_FRONT, GL.GL_AMBIENT_AND_DIFFUSE, materialColor, 0);
 		gl.glEnable(GL.GL_LIGHTING);
 		gl.glPushMatrix();
@@ -50,7 +51,7 @@ public abstract class GraphicObject implements Drawable {
 		gl.glMultMatrixd(convertMatrix(), 0);
 		innerDraw(gl, glut);
 
-		objects.forEach(o -> o.draw(gl, glut));
+		objects.forEach(o -> o.draw(gl, glu, glut));
 
 		gl.glPopMatrix();
 		gl.glDisable(GL.GL_LIGHTING);

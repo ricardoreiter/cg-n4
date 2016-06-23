@@ -2,6 +2,7 @@ package main;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.GLAutoDrawable;
+import javax.media.opengl.glu.GLU;
 import javax.vecmath.Matrix4f;
 import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
@@ -78,8 +79,8 @@ public abstract class WorldObject implements Drawable, Updatable, PhysicsUpdatab
 	}
 	
 	@Override
-	public void draw(GL gl, GLUT glut) {
-		graphicObject.draw(gl, glut);
+	public void draw(GL gl, final GLU glu, GLUT glut) {
+		graphicObject.draw(gl, glu, glut);
 	}
 	
 	@Override
