@@ -41,7 +41,12 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 	private static final float GHOST_OBJECT_DEFAULT_MASS = 10;
 	private static final float GHOST_OBJECT_MAX_MASS = 100000;
 	private static final float GHOST_OBJECT_MIN_MASS = 0;
-	private static final float GHOST_OBJECT_MASS_STEP = 100;
+	private static final float GHOST_OBJECT_MASS_STEP = 10;
+	
+	private static final float TIME_KEPPING_MOUSE_TO_ADD = 0.5f;
+	private static final float TIME_INTERVAL_TO_ADD = 0.01f;
+	
+	private static final float TIME_TO_ADD_MASS_SENSITIVITY = 10f;
 
 	private final World world;
 	private final Render render;
@@ -59,6 +64,15 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 	private boolean needUpdateGhostObject = false;
 	private GhostObjectWheelAction currentMouseWheelAction = GhostObjectWheelAction.CHANGE_HEIGHT;
 	private GhostObjectType currentObjectType = GhostObjectType.BOX;
+	
+	// Variáveis relacionadas ao clique de adicionar vários objetos
+	private boolean mouseDown = false;
+	private boolean addMultipleObjects = false;
+	private double timeCounter = 0;
+	
+	// Variáveis relacionadas ao adicionar massa
+	private byte addMass = 0;
+	private double timeAddingMass = 0;
 
 	public WorldController(final World world, final Render render) {
 		this.world = world;
@@ -71,6 +85,8 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 
 	@Override
 	public void mouseDragged(MouseEvent e) {
+		currentMousePosOnScreen = e.getPoint();
+		needUpdateGhostObject = true;
 	}
 
 	@Override
@@ -86,20 +102,32 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 
 	@Override
 	public void mousePressed(MouseEvent e) {
+		if (e.getButton() == MouseEvent.BUTTON1) {
+			mouseDown = true;
+			timeCounter = TIME_KEPPING_MOUSE_TO_ADD;
+			addMultipleObjects = false;
+		}
 	}
 
 	@Override
 	public void mouseReleased(MouseEvent e) {
 		if (e.getButton() == MouseEvent.BUTTON1) {
-			WorldObject object = factoryObject(currentObjectType, ColorUtils.colors[colorIndex], true, newObjectMass,
-					ghostObjectPos);
-			world.add(object);
-			world.requestRender();
+			addMultipleObjects = false;
+			mouseDown = false;
+			addNewObject();
 		}
+	}
+
+	private void addNewObject() {
+		WorldObject object = factoryObject(currentObjectType, ColorUtils.colors[colorIndex], true, newObjectMass,
+				ghostObjectPos);
+		world.add(object);
+		world.requestRender();
 	}
 
 	@Override
 	public void mouseEntered(MouseEvent e) {
+		
 	}
 
 	@Override
@@ -150,12 +178,26 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 	@Override
 	public void keyPressed(KeyEvent e) {
 		switch (e.getKeyCode()) {
-		case KeyEvent.VK_SHIFT:
-			currentMouseWheelAction = GhostObjectWheelAction.CHANGE_SIZE;
-			break;
-		case KeyEvent.VK_CONTROL:
-			currentMouseWheelAction = GhostObjectWheelAction.CHANGE_ROTATION;
-			break;
+			case KeyEvent.VK_SHIFT:
+				currentMouseWheelAction = GhostObjectWheelAction.CHANGE_SIZE;
+				break;
+			case KeyEvent.VK_CONTROL:
+				currentMouseWheelAction = GhostObjectWheelAction.CHANGE_ROTATION;
+				break;
+			case KeyEvent.VK_F1:
+				if (addMass == 0) {
+					addMass = 1;
+					timeCounter = TIME_INTERVAL_TO_ADD;
+					timeAddingMass = 0;
+				}
+				break;
+			case KeyEvent.VK_F2:
+				if (addMass == 0) {
+					addMass = -1;
+					timeCounter = TIME_INTERVAL_TO_ADD;
+					timeAddingMass = 0;
+				}
+				break;
 		}
 	}
 
@@ -187,10 +229,8 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 			world.addConstraint(Scenario.boxCoverConstraintB);
 			break;
 		case KeyEvent.VK_F1:
-			addObjectMass(GHOST_OBJECT_MASS_STEP);
-			break;
 		case KeyEvent.VK_F2:
-			addObjectMass(-GHOST_OBJECT_MASS_STEP);
+			addMass = 0;
 			break;
 		case KeyEvent.VK_UP:
 			if (colorIndex == ColorUtils.colors.length - 1) {
@@ -213,7 +253,6 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 
 	private void addObjectMass(float mass) {
 		newObjectMass = clampRange(newObjectMass + mass, GHOST_OBJECT_MIN_MASS, GHOST_OBJECT_MAX_MASS);
-		System.out.println("new mass " + newObjectMass);
 	}
 
 	private Ray mousePosToRay(Point mousePos) {
@@ -244,6 +283,39 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 	@Override
 	public void update(float deltaTime) {
 		updateGhostObject();
+		updateMouseActions(deltaTime);
+		updateMassButtonAction(deltaTime);
+	}
+
+	private void updateMassButtonAction(float deltaTime) {
+		if (addMass != 0) {
+			timeAddingMass -= (double) deltaTime;
+			timeCounter -= deltaTime;
+			if (timeCounter <= 0) {
+				timeCounter = TIME_INTERVAL_TO_ADD;
+				addObjectMass((float) ((GHOST_OBJECT_MASS_STEP * addMass) * (timeAddingMass * TIME_TO_ADD_MASS_SENSITIVITY)));
+			}
+		}
+	}
+
+	/**
+	 * Faz o tratamento do clique e segura do mouse para adicionar vários objetos
+	 * @param deltaTime
+	 */
+	private void updateMouseActions(float deltaTime) {
+		if (mouseDown && !addMultipleObjects) {
+			timeCounter -= deltaTime;
+			if (timeCounter <= 0) {
+				addMultipleObjects = true;
+				timeCounter = TIME_INTERVAL_TO_ADD;
+			}
+		} else if (addMultipleObjects) {
+			timeCounter -= deltaTime;
+			if (timeCounter <= 0) {
+				addNewObject();
+				timeCounter = TIME_INTERVAL_TO_ADD;
+			}
+		}
 	}
 
 	private void updateGhostObject() {

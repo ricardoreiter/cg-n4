@@ -13,7 +13,6 @@ import main.physics.BulletMain;
 import main.utils.GLDebugDraw;
 import main.view.Render;
 
-import com.bulletphysics.ContactAddedCallback;
 import com.bulletphysics.dynamics.DynamicsWorld;
 import com.bulletphysics.dynamics.constraintsolver.TypedConstraint;
 import com.sun.opengl.util.GLUT;
