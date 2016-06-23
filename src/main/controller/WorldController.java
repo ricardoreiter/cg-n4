@@ -15,43 +15,46 @@ import javax.media.opengl.glu.GLU;
 import javax.vecmath.Vector3d;
 import javax.vecmath.Vector3f;
 
+import com.bulletphysics.collision.dispatch.CollisionWorld.ClosestRayResultCallback;
+
 import main.Box;
 import main.Line;
 import main.Sphere;
 import main.World;
 import main.WorldObject;
+import main.opengl.utils.ColorUtils;
 import main.physics.Ray;
 import main.utils.Scenario;
 import main.utils.TransformUtils;
 import main.view.Render;
 import main.view.WorldControllerUI;
 
-import com.bulletphysics.collision.dispatch.CollisionWorld.ClosestRayResultCallback;
-
 public class WorldController implements KeyListener, MouseListener, MouseMotionListener, MouseWheelListener, Updatable {
 
 	private static final float GHOST_OBJECT_HEIGHT = 10f;
 	private static final float GHOST_OBJECT_MAX_HEIGHT = 30f;
-	
+
 	private static final float GHOST_OBJECT_DEFAULT_SIZE = 3f;
 	private static final float GHOST_OBJECT_MAX_SIZE = 30f;
 	private static final float GHOST_OBJECT_MIN_SIZE = 1f;
-	
+
 	private static final float GHOST_OBJECT_DEFAULT_MASS = 10;
 	private static final float GHOST_OBJECT_MAX_MASS = 100000;
 	private static final float GHOST_OBJECT_MIN_MASS = 0;
 	private static final float GHOST_OBJECT_MASS_STEP = 100;
-	
+
 	private final World world;
 	private final Render render;
 	private final WorldControllerUI controllerUI;
 	private Point currentMousePosOnScreen;
-	
+
+	private int colorIndex = 0;
 	private WorldObject ghostObject;
 	private Line ghostObjectLine;
 	private Vector3f ghostObjectPos = new Vector3f();
 	private float ghostObjectHeight = GHOST_OBJECT_HEIGHT;
-	private Vector3f ghostObjectSize = new Vector3f(GHOST_OBJECT_DEFAULT_SIZE, GHOST_OBJECT_DEFAULT_SIZE, GHOST_OBJECT_DEFAULT_SIZE);
+	private Vector3f ghostObjectSize = new Vector3f(GHOST_OBJECT_DEFAULT_SIZE, GHOST_OBJECT_DEFAULT_SIZE,
+			GHOST_OBJECT_DEFAULT_SIZE);
 	private float newObjectMass = GHOST_OBJECT_DEFAULT_MASS;
 	private boolean needUpdateGhostObject = false;
 	private GhostObjectWheelAction currentMouseWheelAction = GhostObjectWheelAction.CHANGE_HEIGHT;
@@ -62,7 +65,7 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 		this.render = render;
 		this.controllerUI = new WorldControllerUI();
 		this.render.addDrawable(this.controllerUI);
-		
+
 		Scenario.mountGameScenario(world);
 	}
 
@@ -78,7 +81,7 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
-		
+
 	}
 
 	@Override
@@ -88,7 +91,8 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 	@Override
 	public void mouseReleased(MouseEvent e) {
 		if (e.getButton() == MouseEvent.BUTTON1) {
-			WorldObject object = factoryObject(currentObjectType, new float[]{1, 0, 0, 1}, true, newObjectMass, ghostObjectPos);
+			WorldObject object = factoryObject(currentObjectType, ColorUtils.colors[colorIndex], true, newObjectMass,
+					ghostObjectPos);
 			world.add(object);
 			world.requestRender();
 		}
@@ -105,38 +109,39 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 	@Override
 	public void keyTyped(KeyEvent e) {
 	}
-	
+
 	private void setCurrentObjectType(GhostObjectType type) {
 		currentObjectType = type;
-		
+
 		if (ghostObject != null) {
 			world.remove(ghostObject);
 		}
-		
-		ghostObject = factoryObject(type, new float[]{0.0f, 0.0f, 1.0f}, false, 0, new Vector3f());
+
+		ghostObject = factoryObject(type, ColorUtils.colors[colorIndex], false, 0, new Vector3f());
 		world.add(ghostObject);
 	}
-	
-	private WorldObject factoryObject(GhostObjectType type, float[] color, boolean withPhysics, float mass, Vector3f pos) {
+
+	private WorldObject factoryObject(GhostObjectType type, float[] color, boolean withPhysics, float mass,
+			Vector3f pos) {
 		switch (type) {
-			case BOX:
-				if (withPhysics) {
-					return new Box(ghostObjectSize, color, mass, pos);
-				} else {
-					return new Box(ghostObjectSize, color, pos);
-				}
-			case SPHERE:
-				if (withPhysics) {
-					return new Sphere(ghostObjectSize.x, color, mass, pos);
-				} else {
-					return new Sphere(ghostObjectSize.x, color, pos);
-				}
-			case RAMP:
-				if (withPhysics) {
-					return new Box(ghostObjectSize, color, mass, pos);
-				} else {
-					return new Box(ghostObjectSize, color, pos);
-				}
+		case BOX:
+			if (withPhysics) {
+				return new Box(ghostObjectSize, color, mass, pos);
+			} else {
+				return new Box(ghostObjectSize, color, pos);
+			}
+		case SPHERE:
+			if (withPhysics) {
+				return new Sphere(ghostObjectSize.x, color, mass, pos);
+			} else {
+				return new Sphere(ghostObjectSize.x, color, pos);
+			}
+		case RAMP:
+			if (withPhysics) {
+				return new Box(ghostObjectSize, color, mass, pos);
+			} else {
+				return new Box(ghostObjectSize, color, pos);
+			}
 		default:
 			return null;
 		}
@@ -145,51 +150,67 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 	@Override
 	public void keyPressed(KeyEvent e) {
 		switch (e.getKeyCode()) {
-			case KeyEvent.VK_SHIFT:
-				currentMouseWheelAction = GhostObjectWheelAction.CHANGE_SIZE;
-				break;
-			case KeyEvent.VK_CONTROL:
-				currentMouseWheelAction = GhostObjectWheelAction.CHANGE_ROTATION;
-				break;
+		case KeyEvent.VK_SHIFT:
+			currentMouseWheelAction = GhostObjectWheelAction.CHANGE_SIZE;
+			break;
+		case KeyEvent.VK_CONTROL:
+			currentMouseWheelAction = GhostObjectWheelAction.CHANGE_ROTATION;
+			break;
 		}
 	}
 
 	@Override
 	public void keyReleased(final KeyEvent e) {
 		switch (e.getKeyCode()) {
-			case KeyEvent.VK_SHIFT:
-			case KeyEvent.VK_CONTROL:
-				currentMouseWheelAction = GhostObjectWheelAction.CHANGE_HEIGHT;
-				break;
-			case KeyEvent.VK_1:
-				setCurrentObjectType(GhostObjectType.BOX);
-				break;
-			case KeyEvent.VK_2:
-				setCurrentObjectType(GhostObjectType.SPHERE);
-				break;
-			case KeyEvent.VK_3:
-				setCurrentObjectType(GhostObjectType.RAMP);
-				break;
-			case KeyEvent.VK_P:
-				world.getPhysicWorld().stepSimulation(1);
-				break;
-			case KeyEvent.VK_O:
-				world.removeConstraint(Scenario.boxCoverConstraintA);
-				world.removeConstraint(Scenario.boxCoverConstraintB);
-				break;
-			case KeyEvent.VK_C:
-				world.addConstraint(Scenario.boxCoverConstraintA);
-				world.addConstraint(Scenario.boxCoverConstraintB);
-				break;
-			case KeyEvent.VK_F1:
-				addObjectMass(GHOST_OBJECT_MASS_STEP);
-				break;
-			case KeyEvent.VK_F2:
-				addObjectMass(-GHOST_OBJECT_MASS_STEP);
-				break;
+		case KeyEvent.VK_SHIFT:
+		case KeyEvent.VK_CONTROL:
+			currentMouseWheelAction = GhostObjectWheelAction.CHANGE_HEIGHT;
+			break;
+		case KeyEvent.VK_1:
+			setCurrentObjectType(GhostObjectType.BOX);
+			break;
+		case KeyEvent.VK_2:
+			setCurrentObjectType(GhostObjectType.SPHERE);
+			break;
+		case KeyEvent.VK_3:
+			setCurrentObjectType(GhostObjectType.RAMP);
+			break;
+		case KeyEvent.VK_P:
+			world.getPhysicWorld().stepSimulation(1);
+			break;
+		case KeyEvent.VK_O:
+			world.removeConstraint(Scenario.boxCoverConstraintA);
+			world.removeConstraint(Scenario.boxCoverConstraintB);
+			break;
+		case KeyEvent.VK_C:
+			world.addConstraint(Scenario.boxCoverConstraintA);
+			world.addConstraint(Scenario.boxCoverConstraintB);
+			break;
+		case KeyEvent.VK_F1:
+			addObjectMass(GHOST_OBJECT_MASS_STEP);
+			break;
+		case KeyEvent.VK_F2:
+			addObjectMass(-GHOST_OBJECT_MASS_STEP);
+			break;
+		case KeyEvent.VK_UP:
+			if (colorIndex == ColorUtils.colors.length - 1) {
+				colorIndex = 0;
+			} else {
+				colorIndex++;
+			}
+			ghostObject.changeColor(ColorUtils.colors[colorIndex]);
+			break;
+		case KeyEvent.VK_DOWN:
+			if (colorIndex == 0) {
+				colorIndex = ColorUtils.colors.length - 1;
+			} else {
+				colorIndex--;
+			}
+			ghostObject.changeColor(ColorUtils.colors[colorIndex]);
+			break;
 		}
 	}
-	
+
 	private void addObjectMass(float mass) {
 		newObjectMass = clampRange(newObjectMass + mass, GHOST_OBJECT_MIN_MASS, GHOST_OBJECT_MAX_MASS);
 		System.out.println("new mass " + newObjectMass);
@@ -199,22 +220,24 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 		IntBuffer viewport = render.getViewport();
 		DoubleBuffer modelMatrix = render.getModelMatrix();
 		DoubleBuffer projectionMatrix = render.getProjectionMatrix();
-		
+
 		double winY = viewport.get(3) - mousePos.getY();
-		
+
 		GLU glu = render.getGlu();
-		
+
 		DoubleBuffer coordBuffer = DoubleBuffer.allocate(3);
 		glu.gluUnProject(mousePos.getX(), winY, 0.0f, //
-						 modelMatrix, projectionMatrix, viewport, //
-						 coordBuffer);
-		Vector3f origin = new Vector3f((float) coordBuffer.get(0), (float) coordBuffer.get(1), (float) coordBuffer.get(2));
-		
+				modelMatrix, projectionMatrix, viewport, //
+				coordBuffer);
+		Vector3f origin = new Vector3f((float) coordBuffer.get(0), (float) coordBuffer.get(1),
+				(float) coordBuffer.get(2));
+
 		glu.gluUnProject(mousePos.getX(), winY, 1.0f, //
-						 modelMatrix, projectionMatrix, viewport, //
-						 coordBuffer);
-		Vector3f direction = new Vector3f((float) (coordBuffer.get(0)), (float) (coordBuffer.get(1)), (float) (coordBuffer.get(2)));
-		
+				modelMatrix, projectionMatrix, viewport, //
+				coordBuffer);
+		Vector3f direction = new Vector3f((float) (coordBuffer.get(0)), (float) (coordBuffer.get(1)),
+				(float) (coordBuffer.get(2)));
+
 		return new Ray(origin, direction);
 	}
 
@@ -222,38 +245,41 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 	public void update(float deltaTime) {
 		updateGhostObject();
 	}
-	
+
 	private void updateGhostObject() {
 		if (needUpdateGhostObject && currentMousePosOnScreen != null && render.getGlu() != null) {
 			Ray ray = mousePosToRay(currentMousePosOnScreen);
-			
+
 			ClosestRayResultCallback rayResult = null;
 			synchronized (world.lockList) {
 				rayResult = new ClosestRayResultCallback(ray.getOrigin(), ray.getDirection());
 				world.getPhysicWorld().rayTest(ray.getOrigin(), ray.getDirection(), rayResult);
 			}
-			
+
 			if (rayResult.hasHit()) {
 				if (ghostObject == null) {
 					setCurrentObjectType(GhostObjectType.BOX);
-					ghostObjectLine = new Line(ghostObjectHeight, new float[] {1f, 0.0f, 1f}, new Vector3f());
+					ghostObjectLine = new Line(ghostObjectHeight, new float[] { 1f, 0.0f, 1f }, new Vector3f());
 					world.add(ghostObjectLine);
 				}
 				// Movimenta a linha
 				if (ghostObjectLine != null) {
 					ghostObjectLine.setSize(new Vector3f(ghostObjectHeight, ghostObjectHeight, ghostObjectHeight));
-					ghostObjectLine.getMotionState().setWorldTransform(TransformUtils.getTranslationTransform(rayResult.hitPointWorld));
+					ghostObjectLine.getMotionState()
+							.setWorldTransform(TransformUtils.getTranslationTransform(rayResult.hitPointWorld));
 				}
-				
+
 				// Movimenta a caixa
 				ghostObject.setSize(ghostObjectSize);
 				rayResult.hitPointWorld.y += ghostObjectHeight;
-				ghostObject.getMotionState().setWorldTransform(TransformUtils.getTranslationTransform(rayResult.hitPointWorld));
+				ghostObject.getMotionState()
+						.setWorldTransform(TransformUtils.getTranslationTransform(rayResult.hitPointWorld));
 				ghostObjectPos = new Vector3f(rayResult.hitPointWorld);
-				
+
 				// Atualiza a UI com as informações do objeto
 				controllerUI.setCurrentObjectMass(newObjectMass);
-				controllerUI.setCurrentInfoPos(new Vector3d(ghostObjectPos.x + (ghostObjectSize.x / 2) +2, ghostObjectPos.y, ghostObjectPos.z));
+				controllerUI.setCurrentInfoPos(new Vector3d(ghostObjectPos.x + (ghostObjectSize.x / 2) + 2,
+						ghostObjectPos.y, ghostObjectPos.z));
 			} else if (ghostObject != null) {
 				world.remove(ghostObject);
 				world.remove(ghostObjectLine);
@@ -266,15 +292,15 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 	@Override
 	public void mouseWheelMoved(MouseWheelEvent e) {
 		switch (currentMouseWheelAction) {
-			case CHANGE_HEIGHT:
-				changeGhostHeight(e);
-				break;
-			case CHANGE_ROTATION:
-				// TODO: Fazer rotação em eixo Y
-				break;
-			case CHANGE_SIZE:
-				changeGhostSize(e);
-				break;
+		case CHANGE_HEIGHT:
+			changeGhostHeight(e);
+			break;
+		case CHANGE_ROTATION:
+			// TODO: Fazer rotação em eixo Y
+			break;
+		case CHANGE_SIZE:
+			changeGhostSize(e);
+			break;
 		}
 		needUpdateGhostObject = true;
 	}
@@ -291,7 +317,7 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 		ghostObjectHeight += e.getWheelRotation();
 		ghostObjectHeight = clampRange(ghostObjectHeight, 0, GHOST_OBJECT_MAX_HEIGHT);
 	}
-	
+
 	private float clampRange(float currentValue, float minValue, float maxValue) {
 		if (currentValue > maxValue) {
 			return maxValue;
@@ -300,5 +326,5 @@ public class WorldController implements KeyListener, MouseListener, MouseMotionL
 		}
 		return currentValue;
 	}
-	
+
 }

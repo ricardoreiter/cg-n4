@@ -2,7 +2,7 @@ package main.opengl.utils;
 
 public class ColorUtils {
 
-	public static final float[] BLACK = { 0.0f, 0.0f, 0.0f, };
+	public static final float[] BLACK = { 0.1f, 0.1f, 0.1f, };
 	public static final float[] RED = { 1.0f, 0.0f, 0.0f, };
 	public static final float[] GREEN = { 0.0f, 1.0f, 0.0f };
 	public static final float[] YELLOW = { 1.0f, 1.0f, 0.0f };

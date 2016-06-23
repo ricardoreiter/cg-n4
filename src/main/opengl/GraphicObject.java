@@ -19,7 +19,7 @@ public abstract class GraphicObject implements Drawable {
 	public GraphicObject() {
 		setIdentity();
 	}
-	
+
 	public void addGraphicObject(final GraphicObject object) {
 		objects.add(object);
 	}
@@ -27,21 +27,21 @@ public abstract class GraphicObject implements Drawable {
 	public List<GraphicObject> getGrapicObjects() {
 		return objects;
 	}
-	
+
 	public void setIdentity() {
-		for (int i=0; i<16; ++i) {
+		for (int i = 0; i < 16; ++i) {
 			transformMatrix[i] = 0.0f;
 		}
 		transformMatrix[0] = transformMatrix[5] = transformMatrix[10] = transformMatrix[15] = 1.0f;
 	}
-	
+
 	public abstract void innerDraw(final GL gl, final GLUT glut);
 
 	@Override
 	public void initDraw(GLAutoDrawable drawable, GL gl) {
-		
+
 	}
-	
+
 	@Override
 	public void draw(final GL gl, final GLU glu, final GLUT glut) {
 		gl.glMaterialfv(GL.GL_FRONT, GL.GL_AMBIENT_AND_DIFFUSE, materialColor, 0);
@@ -64,9 +64,13 @@ public abstract class GraphicObject implements Drawable {
 		}
 		return result;
 	}
-	
+
 	public float[] getMatrix() {
 		return transformMatrix;
+	}
+
+	public void changeMaterialColor(float[] color) {
+		materialColor = color;
 	}
 
 	public abstract void setSize(Vector3f size);
